@@ -1,14 +1,16 @@
 import './App.css'
+import {Routes, Route} from "react-router-dom";
+import Dashboard from "./pages/Dashboard";
 
 function App() {
 
   return (
     <div className="app-body">
-      {/* Aquí va el header */}
-      <div className="container">
-        <h1 className="text-lg">Advocatus HCM</h1>
-      </div>
-      {/* Aquí va el footer */}
+      <Routes>
+        <Route path="/dashboard" element={<Dashboard />} />
+        {/* <Route path="/employees" element={<Home />} />
+        <Route path="/employees/new" element={<Home />} /> */}
+      </Routes>
     </div>
   );
 }
