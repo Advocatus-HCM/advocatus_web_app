@@ -34,6 +34,12 @@ const Dashboard = () => {
             route: "/documents",
             icon: "📄",
         },
+        {
+            title: "Configuración",
+            description: "Configura los diferentes datos de cuenta y preferencias.",
+            route: "/settings",
+            icon: "⚙️",
+        },
     ];
 
     return (
@@ -44,12 +50,12 @@ const Dashboard = () => {
                 
                 {/* Bienvenido Usuario */}
                 <div className="mb-6 text-center lg:text-left">
-                    <h1 className="text-2xl font-bold text-gray-800">Bienvenido, Usuario</h1>
+                    <h1 className="text-2xl font-bold text-gray-800">Panel principal</h1>
                 </div>
 
                 {/* Panel Principal Title */}
                 <div className="mb-6">
-                    <h1 className="text-xl font-bold text-gray-800">Panel Principal</h1>
+                    <h1 className="text-xl text-center lg:text-left font-bold text-gray-800">Funciones disponibles para gestionar</h1>
                 </div>
 
                 {/* Dashboard Content */}
