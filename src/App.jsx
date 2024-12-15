@@ -2,7 +2,7 @@ import './App.css'
 import {Routes, Route} from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 
-import Home from "./pages/Home";
+import Home from "./pages/home/Home.jsx";
 
 function App() {
 
