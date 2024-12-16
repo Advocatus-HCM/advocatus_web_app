@@ -31,13 +31,10 @@ a {
 	font-size: 14px;
 	text-decoration: none;
 	margin: 15px 0;
+	transition: color 0.3s ease;
 }
 
-.refRegister{
-	transform: color 0.3s ease;
-}
-
-.refRegister:hover{
+a:hover{
 	color:#3a6186;
 }
 

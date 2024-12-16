@@ -16,7 +16,7 @@ const Login = () => {
               <h1>Iniciar Sesión</h1>
               <input type="email" placeholder="Correo Electrónico" />
               <input type="password" placeholder="Contraseña" />
-              <a href="#">¿Has Olvidado tu Contraseña?</a>
+              <a href="#"><u>¿Has Olvidado tu Contraseña?</u></a>
               <button>Iniciar Sesión</button>
               <p>¿No tienes una cuenta? <a href='/home' className='refRegister'><u>Regístrate</u></a></p>
             </form>
