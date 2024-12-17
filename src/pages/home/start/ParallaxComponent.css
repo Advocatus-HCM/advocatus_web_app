@@ -10,14 +10,10 @@
   }
   
 
-
-
 .title-content{
   font-size: 70px;
+  z-index: 10;
 }
-
-
-
 
   /* Efecto de parallax para la imagen */
   .parallax-image {
@@ -54,7 +50,7 @@
   }
   
   .btn {
-    background-color: #28a745;
+  
     color: white;
     border: none;
     padding: 10px 20px;
@@ -64,7 +60,21 @@
     transition: background-color 0.3s;
   }
   
-  .btn:hover {
-    background-color: #218838;
-  }
+@media screen and (max-width: 768px) {
+    .parallax-container {
+      height: 50vh;
+    }
   
+    .title-content{
+      font-size: 40px;
+    }
+  
+    h1 {
+      font-size: 2rem;
+    }
+  
+    p {
+      font-size: 1rem;
+    }
+  
+}

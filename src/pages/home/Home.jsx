@@ -1,22 +1,17 @@
-import React from 'react'
-import './home.css'
 
+import './home.css'
 import image1 from '../../pages/home/Home-images/home.jpg'
 import HomeCards from './Cards/HomeCards.jsx'
-
-import Navbar from '../../components/layout/navbar/Navbar.jsx'
 import Footer from '../../components/layout/footer/Footer.jsx'
-import ParallaxComponent from './start/ParallaxComponent.jsx'
-
+import ParallaxComponent from './Start/ParallaxComponent.jsx'
+import Navbar2 from '../../components/layout/navbar/Navbar2.jsx'
 const Home = () => {
   return (
     <>
-    <Navbar />
-<ParallaxComponent />
     
-
-
-
+    
+    <Navbar2/>
+    <ParallaxComponent />
 <div className='home-container   flex min-h-screen'>
 
       <div className='home-container-part1'>
