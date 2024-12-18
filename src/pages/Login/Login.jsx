@@ -1,5 +1,5 @@
-import React, {useState} from 'react';
-import Navbar from '../../components/layout/Navbar/Navbar.jsx';
+import React, {useState} from 'react'
+import Navbar2 from '../../components/layout/navbar/Navbar2.jsx';
 import Footer from '../../components/layout/footer/Footer.jsx';
 import './Login.css';
 
@@ -50,9 +50,7 @@ const Login = () => {
 
   return (
     <>
-      <div className="navbar-container">
-        <Navbar />
-      </div>
+      <Navbar2/>
       <div className="main-content">
         <div class="container" id="container">
           <div class="form-container sign-in-container">
@@ -73,7 +71,7 @@ const Login = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Contraseña" 
               />
-              <a href="#"><u>¿Has Olvidado tu Contraseña?</u></a>
+              <a href="#" className='aLogin'><u>¿Has Olvidado tu Contraseña?</u></a>
               <button className='ButtonLogin'>Iniciar Sesión</button>
               {/* <p className="pLogin">¿No tienes una cuenta? <a href='/home' className='refRegister'><u>Regístrate</u></a></p> */}
             </form>
