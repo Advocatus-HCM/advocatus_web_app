@@ -7,7 +7,7 @@ const Dashboard = () => {
         {
             title: "Gestión de Personal",
             description: "Gestiona empleados y roles dentro de la firma.",
-            route: "/employees",
+            route: "/employee-management",
             icon: "👔",
         },
         {
@@ -37,7 +37,7 @@ const Dashboard = () => {
         {
             title: "Configuración",
             description: "Configura los diferentes datos de cuenta y preferencias.",
-            route: "/settings",
+            route: "/account-settings",
             icon: "⚙️",
         },
     ];
@@ -48,14 +48,10 @@ const Dashboard = () => {
             {/* Main Content */}
             <div className="lg:ml-64 w-full p-6 bg-gray min-h-screen">
                 
-                {/* Bienvenido Usuario */}
-                <div className="mb-6 text-center lg:text-left">
+                {/* Panel principal */}
+                <div className="mb-6 lg:text-left text-center">
                     <h1 className="text-2xl font-bold text-gray-800">Panel principal</h1>
-                </div>
-
-                {/* Panel Principal Title */}
-                <div className="mb-6">
-                    <h1 className="text-xl text-center lg:text-left font-bold text-gray-800">Funciones disponibles para gestionar</h1>
+                    <p className="text-gray-600">Funciones disponibles para gestionar</p>
                 </div>
 
                 {/* Dashboard Content */}
