@@ -6,7 +6,7 @@ const Footer = () => {
     <footer className="footer">
       <div className="footer-content">
         <p className="footer-logo">Advocatus HCM</p>
-        <p className="footer-text">© {new Date().getFullYear()} MiApp. Todos los derechos reservados.</p>
+        <p className="footer-text">© {new Date().getFullYear()} Advocatus. Todos los derechos reservados.</p>
       </div>
       <div className="footer-links">
         <a href="/privacy" className="footer-link">Política de Privacidad</a>

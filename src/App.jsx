@@ -3,7 +3,9 @@ import {Routes, Route} from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login/Login";
 
-import Home from "./pages/home/Home";
+
+import Home from "./pages/home/Home.jsx";
+
 
 function App() {
 
