@@ -73,7 +73,7 @@ const Login = () => {
               />
               <a href="#"><u>¿Has Olvidado tu Contraseña?</u></a>
               <button>Iniciar Sesión</button>
-              <p>¿No tienes una cuenta? <a href='/home' className='refRegister'><u>Regístrate</u></a></p>
+              {/* <p>¿No tienes una cuenta? <a href='/home' className='refRegister'><u>Regístrate</u></a></p> */}
             </form>
           </div>
         </div>
