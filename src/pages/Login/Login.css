@@ -3,7 +3,7 @@
 }
 
 
-h1 {
+.TitleLogin {
 	font-weight: bold;
 	margin: 0;
 	font-size: 1.5rem;
@@ -11,11 +11,11 @@ h1 {
 	margin-top: 10px;
 }
 
-h2 {
+.h2Login {
 	text-align: center;
 }
 
-p {
+.pLogin {
 	font-size: 14px;
 	line-height: 20px;
 	letter-spacing: 0.5px;
@@ -27,7 +27,7 @@ p {
 	color: red;
 }
 
-span {
+.spanLogin {
 	font-size: 12px;
 }
 
@@ -44,7 +44,7 @@ a:hover{
 }
 
 
-button {
+.ButtonLogin{
 	border-radius: 20px;
 	border: 1px solid #3a6186;
 	background-color: #3a6186;
@@ -57,24 +57,24 @@ button {
 	transition: transform 80ms ease-in, background-color 0.3s ease;
 }
 
-button:active {
+.ButtonLogin:active {
 	transform: scale(0.95);
 }
 
-button:hover {
+.ButtonLogin:hover {
     background-color: #244767; /* Color más oscuro al pasar el cursor */
 }
 
-button:focus {
+.ButtonLogin:focus {
 	outline: none;
 }
 
-button.ghost {
+.ButtonLogin.ghost {
 	background-color: transparent;
 	border-color: #FFFFFF;
 }
 
-form {
+.FormLogin {
 	background-color: #FFFFFF;
 	display: flex;
 	align-items: center;
@@ -85,7 +85,7 @@ form {
 	text-align: center;
 }
 
-input {
+.inputLogin {
 	background-color: #eee;
 	border: none;
 	padding: 12px 15px;

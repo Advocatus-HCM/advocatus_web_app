@@ -56,24 +56,26 @@ const Login = () => {
       <div className="main-content">
         <div class="container" id="container">
           <div class="form-container sign-in-container">
-            <form onSubmit={handleLogin}>
-              <h1>Iniciar Sesión</h1>
+            <form onSubmit={handleLogin} className='FormLogin'>
+              <h1 className='TitleLogin'>Iniciar Sesión</h1>
               {showError && <p className='Error'>Correo Electrónico y/o Contraseña Incorrectos</p>}
               <input
                 type="email"
+                className='inputLogin'
                 value={email}
                 onChange={(e) => setEmail(e.target.value)} 
                 placeholder="Correo Electrónico"
               />
               <input
                 type="password"
+                className='inputLogin'
                 value={password} 
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Contraseña" 
               />
               <a href="#"><u>¿Has Olvidado tu Contraseña?</u></a>
-              <button>Iniciar Sesión</button>
-              {/* <p>¿No tienes una cuenta? <a href='/home' className='refRegister'><u>Regístrate</u></a></p> */}
+              <button className='ButtonLogin'>Iniciar Sesión</button>
+              {/* <p className="pLogin">¿No tienes una cuenta? <a href='/home' className='refRegister'><u>Regístrate</u></a></p> */}
             </form>
           </div>
         </div>
