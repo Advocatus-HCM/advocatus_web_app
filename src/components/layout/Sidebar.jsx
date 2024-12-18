@@ -44,12 +44,11 @@ const Sidebar = () => {
                 </div>
                 
                 {/* Bienvenida y perfil del usuario */}
-                <div className="p-4 text-center border-b border-gray-700">
+                <div className="p-3 text-center border-b border-gray-700">
                     <p className="text-lg font-semibold">Bienvenido</p>
                     <FaUserCircle size={60} className="text-4xl mx-auto my-2" />
                     <p className="text-sm font-medium">User</p>
                 </div>
-                
                 <nav className="flex-1 p-4 space-y-2">
                     <Link
                         to="/dashboard"
@@ -61,9 +60,9 @@ const Sidebar = () => {
                         Panel Principal
                     </Link>
                     <Link
-                        to="/employees"
+                        to="/employee-management"
                         className={`block px-4 py-2 rounded-md ${
-                            isActive("/employees") ? "bg-gray-600" : "hover:bg-gray-600"
+                            isActive("/employee-management") ? "bg-gray-600" : "hover:bg-gray-600"
                         }`}
                         onClick={toggleSidebar}
                     >
@@ -106,9 +105,9 @@ const Sidebar = () => {
                         Gest. de Documentación
                     </Link>
                     <Link
-                        to="/settings"
+                        to="/account-settings"
                         className={`block px-4 py-2 rounded-md ${
-                            isActive("/settings") ? "bg-gray-600" : "hover:bg-gray-600"
+                            isActive("/account-settings") ? "bg-gray-600" : "hover:bg-gray-600"
                         }`}
                         onClick={toggleSidebar}
                     >
