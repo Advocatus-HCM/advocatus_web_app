@@ -8,12 +8,9 @@ import Navbar2 from '../../components/layout/navbar/Navbar2.jsx'
 const Home = () => {
   return (
     <>
-    
-    
     <Navbar2/>
     <ParallaxComponent />
 <div className='home-container   flex min-h-screen'>
-
       <div className='home-container-part1'>
 
         <div className='home-container-part1-text'>
@@ -28,33 +25,17 @@ const Home = () => {
               </p>
          </div>
       </div>
-
       <br />
-
   <div   className='home-container-part1'>
-
-
     <img className='image1' src={image1} alt="" />
-
   </div>
 
 
 </div>
 
-
-
 <br />
 
-
-
 <HomeCards />
-
-
-
-
-
-
- 
 
 
 <br />
@@ -121,7 +102,7 @@ Busque soluciones personalizadas.</h2>
 
 
     <div className='contact-home-info'>
-    <p className='Subtittle'>Contacto</p>
+    <p className='Subtittle-c'>Contacto</p>
 
     <div className='container-contact'>
         <div>

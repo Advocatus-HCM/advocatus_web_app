@@ -74,3 +74,22 @@
     line-height: 1.4;
   }
   
+
+  @media screen and (max-width: 768px) {
+
+
+    .text-innovative{
+        width: 100%;
+        font-size: 24px;
+        font-family: Inter;
+    }
+    .cards-grid {
+      flex-direction: column;
+      align-items: center;
+    }
+  
+    .card {
+      width: 100%;
+    }
+    
+  }
