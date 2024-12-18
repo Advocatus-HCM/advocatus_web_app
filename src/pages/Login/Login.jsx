@@ -1,6 +1,7 @@
 import React, {useState} from 'react'
-import Navbar2 from '../../components/layout/navbar/Navbar2.jsx';
-import Footer from '../../components/layout/footer/Footer.jsx';
+import Navbar2 from '../../components/layout/navbar/Navbar2'
+import Footer from '../../components/layout/footer/Footer'
+
 import './Login.css';
 
 const Login = () => {
@@ -51,8 +52,8 @@ const Login = () => {
   return (
     <>
       <Navbar2/>
-      <div className="main-content">
-        <div class="container" id="container">
+      <div className="main-contentLogin">
+        <div class="containerLogin" id="container">
           <div class="form-container sign-in-container">
             <form onSubmit={handleLogin} className='FormLogin'>
               <h1 className='TitleLogin'>Iniciar Sesión</h1>
