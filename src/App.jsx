@@ -2,7 +2,7 @@ import './App.css'
 import {Routes, Route} from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 
-import Login from "./pages/Login/Login.jsx";
+import Login from './pages/login/Login.jsx';
 
 
 import NotFoundPage from "./pages/NotFound";
