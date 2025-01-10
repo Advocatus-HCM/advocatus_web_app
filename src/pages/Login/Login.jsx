@@ -41,12 +41,13 @@ const Login = () => {
 
       if (response.ok) {
         const data = await response.json();
-        console.log('Login exitoso:', data);
+        console.log('Login exitoso');
 
         //Set Cookies
         document.cookie = `token=${data.access_token}; path=/;`;
         //document.cookie = `token_type=${data.token_type}; path=/;`;
         document.cookie = `email=${email}; path=/;`;
+        document.cookie = `role=${data.role}; path=/;`;
         //Success Login and redirect to dashboard
         navigate('/dashboard');
 
