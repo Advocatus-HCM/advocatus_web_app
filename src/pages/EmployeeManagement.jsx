@@ -2,9 +2,11 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import Sidebar from "../components/layout/Sidebar";
+import Select from "react-select";
 import CreateUserModal from "../components/forms/CreateUserModal";
 import CreateTeamModal from "../components/forms/CreateTeamModal";
 import CreateAssistantModal from "../components/forms/CreateAssistantModal";
+import CreateContractModal from "../components/forms/CreateContractModal";
 
 const EmployeeManagement = () => {
     const [teamFilter, setTeamFilter] = useState("Todos");
@@ -24,8 +26,16 @@ const EmployeeManagement = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
     const [isAssistantModalOpen, setIsAssistantModalOpen] = useState(false);
+    const [isContractModalOpen, setIsContractModalOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [assistantSearchQuery, setAssistantSearchQuery] = useState('');
+    const [contracts, setContracts] = useState([]);
+    const [contractTypes, setContractTypes] = useState([]);
+    const [tempContractData, setTempContractData] = useState({});
+    const [userEmails, setUserEmails] = useState([]);
+    const [editingContract, setEditingContract] = useState(null);
+    const [managers, setManagers] = useState([]);
+
 
     useEffect(() => {
         fetchUsers();
@@ -33,6 +43,9 @@ const EmployeeManagement = () => {
         fetchRoles();
         fetchProfessions();
         fetchAssistants();
+        fetchContracts();
+        fetchUserEmails();
+        fetchContractTypes();
     }, []);
 
     const addUser = (user) => {
@@ -51,13 +64,38 @@ const EmployeeManagement = () => {
         setTeams((prev) => [...prev, assistant]);
     };
 
+    const addContract = (contract) => {
+        setContracts((prev) => [...prev, contract]);
+    };
+
     const fetchUsers = async () => {
         try {
             const response = await axios.get("http://localhost:8001/get-users");
-            console.log(response.data);
-            setEmployees(Array.isArray(response.data) ? response.data : []);
+            const allUsers = Array.isArray(response.data) ? response.data : [];
+            setEmployees(allUsers);
+            setManagers(allUsers.filter(user => user.role === "gerente"));
         } catch (error) {
             console.error("Error fetching users:", error);
+        }
+    };
+    
+
+    const fetchUserEmails = async () => {
+        try {
+            const response = await axios.get("http://localhost:8001/get-users");
+            const emails = response.data.map((user) => ({ label: user.email, value: user.email }));
+            setUserEmails(emails);
+        } catch (error) {
+            console.error("Error fetching user emails:", error);
+        }
+    };
+
+    const fetchContractTypes = async () => {
+        try {
+            const response = await axios.get("http://localhost:8001/get-types");
+            setContractTypes(response.data);
+        } catch (error) {
+            console.error("Error fetching contract types:", error);
         }
     };
 
@@ -98,6 +136,15 @@ const EmployeeManagement = () => {
         }
     };
 
+    const fetchContracts = async () => {
+        try {
+            const response = await axios.get("http://localhost:8001/get-contracts");
+            setContracts(Array.isArray(response.data) ? response.data : []);
+        } catch (error) {
+            console.error("Error fetching contracts:", error);
+        }
+    };
+
     const handleSave = async (email) => {
         try {
             const dataToSend = { ...tempEmployeeData };
@@ -125,6 +172,11 @@ const EmployeeManagement = () => {
             ...prev,
             [field]: value,
         }));
+
+        setTempContractData((prev) => ({
+            ...prev,
+            [field]: value,
+        }));
     };
 
     const handleTeamChange = (field, value) => {
@@ -133,7 +185,38 @@ const EmployeeManagement = () => {
             [field]: value,
         }));
     };
-    
+
+    const handleEditContract = (contract) => {
+        setEditingContract(contract.user_email);
+        setTempContractData({ ...contract });
+    };
+
+    const handleSaveContract = async (contractEmail) => {
+        try {
+            const dataToSend = Object.keys(tempContractData).reduce((acc, key) => {
+                if (tempContractData[key] !== contracts.find((c) => c.user_email === contractEmail)[key]) {
+                    acc[key] = tempContractData[key];
+                }
+                return acc;
+            }, {});
+
+            if (Object.keys(dataToSend).length > 0) {
+                await axios.patch(`http://localhost:8001/update-contract/${contractEmail}`, dataToSend);
+                setContracts((prev) =>
+                    prev.map((contract) =>
+                        contract.user_email === contractEmail ? { ...contract, ...dataToSend } : contract
+                    )
+                );
+                Swal.fire("Actualizado!", "El contrato ha sido actualizado.", "success");
+            }
+            setEditingContract(null);
+            setTempContractData({});
+        } catch (error) {
+            console.error("Error updating contract:", error);
+            Swal.fire("Error!", "Hubo un error al actualizar el contrato.", "error");
+        }
+    };
+
     const handleSaveTeam = async (teamName) => {
         try {
             const dataToSend = { ...tempTeamData };
@@ -173,6 +256,10 @@ const EmployeeManagement = () => {
         setIsAssistantModalOpen(true);
     };
 
+    const openContractModal = () => {
+        setIsContractModalOpen(true);
+    };
+
     const closeUserModal = () => {
         setIsModalOpen(false);
         fetchUsers();
@@ -186,6 +273,11 @@ const EmployeeManagement = () => {
     const closeAssistantModal = () => {
         setIsAssistantModalOpen(false);
         fetchAssistants();
+    };
+
+    const closeContractModal = () => {
+        setIsContractModalOpen(false);
+        fetchContracts();
     };
 
     const handleDeleteUser = async (userEmail) => {
@@ -265,6 +357,30 @@ const EmployeeManagement = () => {
         }
     };
 
+    const handleDeleteContract = async (contractEmail) => {
+        const result = await Swal.fire({
+            title: '¿Estás seguro?',
+            text: "No podrás revertir esto",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                await axios.delete(`http://localhost:8001/delete-contract/${contractEmail}`);
+                setContracts((prev) => prev.filter((contract) => contract.user_email !== contractEmail));
+                Swal.fire("Eliminado!", "El contrato ha sido eliminado.", "success");
+            } catch (error) {
+                console.error("Error deleting contract:", error);
+                Swal.fire("Error!", "Hubo un error al eliminar el contrato.", "error");
+            }
+        }
+    };
+
     const filteredEmployees = employees ? employees.filter((employee) => {
         return (
             employee &&
@@ -297,6 +413,16 @@ const EmployeeManagement = () => {
         );
     }) : [];
 
+    const [contractTypeFilter, setContractTypeFilter] = useState("Todos");
+
+    const filteredContracts = contracts ? contracts.filter((contract) =>
+        contract &&
+        typeof contract.user_email === 'string' && 
+        contract.user_email.toLowerCase().includes(searchQuery.toLowerCase()) &&
+        (contractTypeFilter === "Todos" || contract.type === contractTypeFilter)
+    ) : [];
+    
+    
     const leaders = employees.filter(employee => employee.role !== 'asistente');
 
     const leaderEmails = employees
@@ -319,26 +445,49 @@ const EmployeeManagement = () => {
                 </div>
 
                 {/* Pestañas */}
-                <div className="mb-6 flex justify-center">
+                <div className="mb-6 flex flex-wrap justify-center sm:flex-nowrap">
                     <button
                         onClick={() => handleTabChange("usuarios")}
-                        className={`px-4 py-2 text-lg font-medium ${activeTab === "usuarios" ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-600"}`}
+                        className={`w-full sm:w-auto px-4 py-2 text-center text-lg font-medium ${
+                            activeTab === "usuarios"
+                                ? "text-blue-600 border-b-2 border-blue-600"
+                                : "text-gray-600"
+                        }`}
                     >
                         Usuarios
                     </button>
                     <button
                         onClick={() => handleTabChange("equipos")}
-                        className={`px-4 py-2 text-lg font-medium ${activeTab === "equipos" ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-600"}`}
+                        className={`w-full sm:w-auto px-4 py-2 text-center text-lg font-medium ${
+                            activeTab === "equipos"
+                                ? "text-blue-600 border-b-2 border-blue-600"
+                                : "text-gray-600"
+                        }`}
                     >
                         Equipos
                     </button>
                     <button
                         onClick={() => handleTabChange("asistentes")}
-                        className={`px-4 py-2 text-lg font-medium ${activeTab === "asistentes" ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-600"}`}
+                        className={`w-full sm:w-auto px-4 py-2 text-center text-lg font-medium ${
+                            activeTab === "asistentes"
+                                ? "text-blue-600 border-b-2 border-blue-600"
+                                : "text-gray-600"
+                        }`}
                     >
                         Asistentes
                     </button>
+                    <button
+                        onClick={() => handleTabChange("contratos")}
+                        className={`w-full sm:w-auto px-4 py-2 text-center text-lg font-medium ${
+                            activeTab === "contratos"
+                                ? "text-blue-600 border-b-2 border-blue-600"
+                                : "text-gray-600"
+                        }`}
+                    >
+                        Contratos
+                    </button>
                 </div>
+
                 {/* Contenido de la pestaña de Usuarios */}
                 {activeTab === "usuarios" && (
                     <>
@@ -440,6 +589,9 @@ const EmployeeManagement = () => {
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
                                             Equipo
                                         </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]">
+                                            Superior
+                                        </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
                                             Rol
                                         </th>
@@ -478,7 +630,7 @@ const EmployeeManagement = () => {
                                                     employee.last_name
                                                 )}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 min-w-[150px]">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 min-w-[25px] max-w-[25px] overflow-hidden text-ellipsis">
                                                 {editingRow === employee.email ? (
                                                     <input
                                                         type="text"
@@ -506,6 +658,24 @@ const EmployeeManagement = () => {
                                                     </select>
                                                 ) : (
                                                     employee.team || "Sin equipo"
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 min-w-[25px] max-w-[25px] overflow-hidden text-ellipsis">
+                                                {editingRow === employee.email ? (
+                                                    <select
+                                                        value={tempEmployeeData.superior !== undefined ? tempEmployeeData.superior : employee.superior}
+                                                        onChange={(e) => handleChange("superior", e.target.value)}
+                                                        className="border border-gray-300 rounded-md p-2 w-full"
+                                                    >
+                                                        <option value="">Sin superior</option>
+                                                        {managers.map((manager) => (
+                                                            <option key={manager.email} value={manager.email}>
+                                                                {manager.email}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                ) : (
+                                                    <span title={employee.superior}>{employee.superior || "Sin superior"}</span>
                                                 )}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 min-w-[100px]">
@@ -812,12 +982,208 @@ const EmployeeManagement = () => {
                         </div>
                     </>
                 )}
+                {activeTab === "contratos" && (
+                    <>
+                        <div className="flex flex-row justify-center items-center gap-4 mb-6 w-full">
+                            <input
+                                type="text"
+                                placeholder="Buscar por correo electrónico..."
+                                className="w-full sm:w-3/4 lg:w-2/5 max-w-lg rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                            <button
+                                className="bg-blue-600 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-700"
+                            >
+                                Buscar
+                            </button>
+                        </div>
+
+                        <div className="mb-6">
+                            <button
+                                className="bg-blue-600 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-700"
+                                onClick={openContractModal}
+                            >
+                                Crear contrato
+                            </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Filtrar por tipo de contrato
+                                </label>
+                                <select
+                                    value={contractTypeFilter}
+                                    onChange={(e) => setContractTypeFilter(e.target.value)}
+                                    className="w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2"
+                                >
+                                    <option value="Todos">Todos los tipos</option>
+                                    {contractTypes.map((type) => (
+                                        <option key={type} value={type}>
+                                            {type}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="overflow-x-auto bg-white shadow rounded-lg max-h-96 overflow-y-auto">
+                            <table className="min-w-full table-fixed divide-y divide-gray-200">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Correo</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Salario</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Inicio</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Fin</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fin Prueba</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rol</th>
+                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {filteredContracts.map((contract) => (
+                                        <tr key={contract._id}>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                {editingContract === contract.user_email ? (
+                                                    <Select
+                                                        options={userEmails}
+                                                        value={userEmails.find((email) => email.value === tempContractData.user_email)}
+                                                        onChange={(selectedOption) => handleChange("user_email", selectedOption.value)}
+                                                    />
+                                                ) : (
+                                                    contract.user_email
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                {editingContract === contract.user_email ? (
+                                                    <select
+                                                        value={tempContractData.type}
+                                                        onChange={(e) => handleChange("type", e.target.value)}
+                                                        className="border border-gray-300 rounded-md p-2 w-full"
+                                                    >
+                                                        {contractTypes.map((type) => (
+                                                            <option key={type} value={type}>{type}</option>
+                                                        ))}
+                                                    </select>
+                                                ) : (
+                                                    contract.type
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                {editingContract === contract.user_email ? (
+                                                    <input
+                                                        type="number"
+                                                        value={tempContractData.salary}
+                                                        onChange={(e) => handleChange("salary", e.target.value)}
+                                                        className="border border-gray-300 rounded-md p-2 w-full"
+                                                    />
+                                                ) : (
+                                                    contract.salary
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                {editingContract === contract.user_email ? (
+                                                    <input
+                                                        type="date"
+                                                        value={tempContractData.start_date}
+                                                        onChange={(e) => handleChange("start_date", e.target.value)}
+                                                        className="border border-gray-300 rounded-md p-2 w-full"
+                                                    />
+                                                ) : (
+                                                    contract.start_date
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                {editingContract === contract.user_email ? (
+                                                    <input
+                                                        type="date"
+                                                        value={tempContractData.end_date}
+                                                        onChange={(e) => handleChange("end_date", e.target.value)}
+                                                        className="border border-gray-300 rounded-md p-2 w-full"
+                                                    />
+                                                ) : (
+                                                    contract.end_date
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                {editingContract === contract.user_email ? (
+                                                    <input
+                                                        type="date"
+                                                        value={tempContractData.probation_end_date}
+                                                        onChange={(e) => handleChange("probation_end_date", e.target.value)}
+                                                        className="border border-gray-300 rounded-md p-2 w-full"
+                                                    />
+                                                ) : (
+                                                    contract.probation_end_date
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                {editingContract === contract.user_email ? (
+                                                    <select
+                                                        value={tempContractData.role}
+                                                        onChange={(e) => handleChange("role", e.target.value)}
+                                                        className="border border-gray-300 rounded-md p-2 w-full"
+                                                    >
+                                                        {roles.map((role) => (
+                                                            <option key={role} value={role}>{role}</option>
+                                                        ))}
+                                                    </select>
+                                                ) : (
+                                                    contract.role
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                {editingContract === contract.user_email ? (
+                                                    <>
+                                                        <button
+                                                            onClick={() => handleSaveContract(contract.user_email)}
+                                                            className="text-blue-600 hover:text-blue-900 mr-4"
+                                                        >
+                                                            Guardar
+                                                        </button>
+                                                        <button
+                                                            onClick={() => {
+                                                                setEditingContract(null);
+                                                                setTempContractData({});
+                                                            }}
+                                                            className="text-red-600 hover:text-red-900"
+                                                        >
+                                                            Cancelar
+                                                        </button>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <button
+                                                            onClick={() => handleEditContract(contract)}
+                                                            className="text-blue-600 hover:text-blue-900 mr-4"
+                                                        >
+                                                            Editar
+                                                        </button>
+                                                        <button
+                                                            className="text-red-600 hover:text-red-900"
+                                                            onClick={() => handleDeleteContract(contract.user_email)}
+                                                        >
+                                                            Eliminar
+                                                        </button>
+                                                    </>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </>
+                )}
             </div>
 
             {/* Modal para crear usuario */}
             {isModalOpen && <CreateUserModal closeModal={closeUserModal} addUser={addUser} />}
             {isTeamModalOpen && <CreateTeamModal closeModal={closeTeamModal} addTeam={addTeam} />}
             {isAssistantModalOpen && <CreateAssistantModal closeModal={closeAssistantModal} refreshAssistants={addAssistant} />}
+            {isContractModalOpen && <CreateContractModal closeModal={closeContractModal} addContract={addContract} />}
         </div>
     );
 };
