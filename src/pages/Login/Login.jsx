@@ -5,6 +5,17 @@ import Footer from '../../components/layout/footer/Footer';
 
 import './Login.css';
 
+//GraphQL Petition for Login
+const queryLogin= `
+mutation Signin($email: String!, $password: String!) {
+  signin(email: $email, password: $password) {
+    message
+    response
+    success
+  }
+}
+`;
+
 const Login = () => {
   const [showError, setShowError] = useState(false);
   const [email, setEmail] = useState('');
@@ -20,27 +31,27 @@ const Login = () => {
     setShowError(false);
     setIsLoading(true); // Loading Animation On
 
-    //Add the data to the form
-    const loginData = new URLSearchParams();
-    loginData.append('username', email);
-    loginData.append('password', password);
-
-    console.log('Datos de login:', loginData.toString());
-
+    const variablespeticion = {
+      email: email,
+      password: password,
+    };
+    
     try {
-      //Execute the request
-      const response = await fetch('http://localhost:8000/signin', {
+      const response = await fetch('http://localhost:4000/', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
+          'Content-Type': 'application/json',
         },
-        body: loginData.toString()
+        //Variables and query for the request must have the same name, otherwise the request will fail because is waiting for "query" and "variables"
+        body: JSON.stringify({ query: queryLogin, variables: variablespeticion }),
       });
 
       console.log('Response status:', response.status);
-
-      if (response.ok) {
-        const data = await response.json();
+      const result = await response.json();
+      console.log(result);
+      //Case when the response is OK and the login is successful
+      if (response.ok && result.data.signin !== null && result.data.signin.success) {
+        const data = await result.data.signin.response;
         console.log('Login exitoso');
 
         //Set Cookies
