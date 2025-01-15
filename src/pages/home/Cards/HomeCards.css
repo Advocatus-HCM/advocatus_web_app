@@ -1,0 +1,95 @@
+/* Contenedor principal */
+.home-cards-container {
+    text-align: center;
+    padding: 20px;
+    background-color: #f8fafc; /* Fondo claro */
+    cursor: pointer;
+  }
+  
+  /* Título principal */
+  .home-cards-title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #212121;
+    margin-bottom: 30px;
+  }
+  
+  /* Contenedor de las tarjetas */
+  .cards-grid {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  /* Estilo de cada tarjeta */
+  .card {
+    background: white;
+ 
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 8px 12px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Imagen dentro de la tarjeta */
+  .card-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+  }
+  
+  /* Contenido de la tarjeta */
+  .card-content {
+    padding: 15px;
+    text-align: left;
+   
+  }
+  
+  .card-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #000000; /* Verde para destacar */
+    margin-bottom: 10px;
+   
+  }
+
+
+  
+  .card-title:hover {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #1b8a23; /* Verde para destacar */
+    margin-bottom: 10px;
+  }
+  
+  .card-description {
+    font-size: 0.9rem;
+    color: #5f5f5f;
+    line-height: 1.4;
+  }
+  
+
+  @media screen and (max-width: 768px) {
+
+
+    .text-innovative{
+        width: 100%;
+        font-size: 24px;
+        font-family: Inter;
+    }
+    .cards-grid {
+      flex-direction: column;
+      align-items: center;
+    }
+  
+    .card {
+      width: 100%;
+    }
+    
+  }
