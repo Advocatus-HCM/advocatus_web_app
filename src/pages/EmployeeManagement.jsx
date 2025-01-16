@@ -128,11 +128,11 @@ const EmployeeManagement = () => {
 
     const fetchAssistants = async () => {
         try {
-            const response = await fetch('http://localhost:8001/get-all-assistants');
-            const data = await response.json();
-            setAssistants(data.assistants);
+            const response = await axios.get('http://localhost:8001/get-all-assistants');
+            setAssistants(Array.isArray(response.data.assistants) ? response.data.assistants : []);
         } catch (error) {
-            console.error('Error fetching assistants:', error);
+            console.error('Error fetching assistants:', error.message);
+            console.error('Detalles del error completo:', error); 
         }
     };
 
