@@ -9,7 +9,6 @@ const CreateUserModal = ({ closeModal, addUser }) => {
     const [lastName, setLastName] = useState("");
     const [email, setEmail] = useState("");
     const [phoneNumber, setPhoneNumber] = useState("");
-    const [password, setPassword] = useState("");
     const [profession, setProfession] = useState("");
     const [superior, setSuperior] = useState("");
     const [team, setTeam] = useState("");
@@ -116,15 +115,6 @@ const CreateUserModal = ({ closeModal, addUser }) => {
                             onChange={(e) => setEmail(e.target.value)}
                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
                             required
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Contraseña</label>
-                        <input
-                            type="text"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
                         />
                     </div>
                     <div>

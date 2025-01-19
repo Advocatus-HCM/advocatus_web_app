@@ -53,10 +53,13 @@ const CreateContractModal = ({ closeModal, addContract }) => {
             type,
             salary,
             start_date: startDate.toISOString().split("T")[0],
-            end_date: endDate ? endDate.toISOString().split("T")[0] : null,
             probation_end_date: probationEndDate ? probationEndDate.toISOString().split("T")[0] : null,
             role
         };
+
+        if (type !== "indefinido" && endDate) {
+            contract.end_date = endDate.toISOString().split("T")[0];
+        }
 
         axios.post("http://localhost:8001/create-contract", contract)
             .then(response => {
@@ -150,6 +153,8 @@ const CreateContractModal = ({ closeModal, addContract }) => {
                             onChange={(date) => setEndDate(date)}
                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
                             dateFormat="yyyy-MM-dd"
+                            disabled={type === "indefinido"} 
+                            placeholderText={type === "indefinido" ? "No aplica para contrato indefinido" : "Seleccionar fecha"}
                             minDate={startDate}
                         />
                     </div>
