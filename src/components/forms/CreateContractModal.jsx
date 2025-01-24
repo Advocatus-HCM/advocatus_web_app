@@ -107,7 +107,7 @@ const CreateContractModal = ({ closeModal, addContract }) => {
                 <h2 className="text-2xl font-semibold text-center text-gray-800 mb-4 border-b border-gray-300 pb-2">Crear Contrato</h2>
                 <form onSubmit={handleSubmit} className="space-y-4 p-4 max-h-[500px] overflow-y-auto">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Usuario</label>
+                        <label className="block text-sm font-medium text-gray-700">Usuario *</label>
                         <Select
                             options={userOptions}
                             onChange={(selectedOption) => setUserEmail(selectedOption ? selectedOption.value : "")}
@@ -117,7 +117,7 @@ const CreateContractModal = ({ closeModal, addContract }) => {
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Tipo de Contrato</label>
+                        <label className="block text-sm font-medium text-gray-700">Tipo de Contrato *</label>
                         <Select
                             options={typeOptions}
                             onChange={(selectedOption) => setType(selectedOption ? selectedOption.value : "")}
@@ -127,7 +127,7 @@ const CreateContractModal = ({ closeModal, addContract }) => {
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Salario</label>
+                        <label className="block text-sm font-medium text-gray-700">Salario *</label>
                         <input
                             type="number"
                             value={salary}
@@ -137,7 +137,7 @@ const CreateContractModal = ({ closeModal, addContract }) => {
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Fecha de Inicio</label>
+                        <label className="block text-sm font-medium text-gray-700">Fecha de Inicio *</label>
                         <DatePicker
                             selected={startDate}
                             onChange={(date) => setStartDate(date)}
@@ -159,7 +159,7 @@ const CreateContractModal = ({ closeModal, addContract }) => {
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Fin del Periodo de Prueba</label>
+                        <label className="block text-sm font-medium text-gray-700">Fin del Periodo de Prueba *</label>
                         <DatePicker
                             selected={probationEndDate}
                             onChange={(date) => setProbationEndDate(date)}
@@ -169,7 +169,7 @@ const CreateContractModal = ({ closeModal, addContract }) => {
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Rol</label>
+                        <label className="block text-sm font-medium text-gray-700">Rol *</label>
                         <Select
                             options={roleOptions}
                             onChange={(selectedOption) => setRole(selectedOption ? selectedOption.value : "")}
@@ -177,6 +177,11 @@ const CreateContractModal = ({ closeModal, addContract }) => {
                             placeholder="Seleccionar rol"
                             isClearable
                         />
+                    </div>
+                    <div>
+                        <center>
+                            <span className="text-xs text-gray-500">* Campos obligatorios</span>
+                        </center>
                     </div>
                     <div className="flex justify-end">
                         <button

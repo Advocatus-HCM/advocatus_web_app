@@ -71,7 +71,7 @@ const CreateAssistantModal = ({ closeModal, refreshAssistants }) => {
                 <h2 className="text-2xl font-semibold text-center text-gray-800 mb-4 border-b border-gray-300 pb-2">Asignar Asistente</h2>
                 <form onSubmit={handleSubmit} className="space-y-4 p-4 max-h-[500px] overflow-y-auto">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Seleccionar Asistente</label>
+                        <label className="block text-sm font-medium text-gray-700">Seleccionar Asistente *</label>
                         <Select
                             options={assistantOptions}
                             onChange={(selectedOption) => setAssistant(selectedOption ? selectedOption.value : "")}
@@ -81,7 +81,7 @@ const CreateAssistantModal = ({ closeModal, refreshAssistants }) => {
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Asignar a Usuario</label>
+                        <label className="block text-sm font-medium text-gray-700">Asignar a Usuario *</label>
                         <Select
                             options={userOptions}
                             onChange={(selectedOption) => setUser(selectedOption ? selectedOption.value : "")}
@@ -89,6 +89,11 @@ const CreateAssistantModal = ({ closeModal, refreshAssistants }) => {
                             placeholder="Seleccionar usuario"
                             isClearable
                         />
+                    </div>
+                    <div>
+                        <center>
+                            <span className="text-xs text-gray-500">* Campos obligatorios</span>
+                        </center>
                     </div>
                     <div className="flex justify-end">
                         <button
