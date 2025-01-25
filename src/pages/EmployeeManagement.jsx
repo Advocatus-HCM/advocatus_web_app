@@ -1043,8 +1043,8 @@ const EmployeeManagement = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
-                                    {filteredContracts.map((contract) => (
-                                        <tr key={contract._id}>
+                                    {filteredContracts.map((contract, index) => (
+                                        <tr key={contract._id || index}>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                                 {editingContract === contract.user_email ? (
                                                     <Select
