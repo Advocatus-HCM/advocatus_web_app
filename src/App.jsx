@@ -6,6 +6,7 @@ import NotFoundPage from "./pages/NotFound";
 import EmployeeManagement from './pages/EmployeeManagement.jsx';
 import AccountSettings from './pages/AccountSettings.jsx';
 import Home from "./pages/home/Home.jsx";
+import Cases from './pages/Cases.jsx';
 import { AuthProvider } from './context/AuthContext';
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/employee-management" element={<EmployeeManagement />} />
           <Route path="/account-settings" element={<AccountSettings />} />
+          <Route path="/cases" element={<Cases />} />
         </Routes>
       </div>
     </AuthProvider>

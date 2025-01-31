@@ -9,7 +9,6 @@ const CreateUserModal = ({ closeModal, addUser }) => {
     const [lastName, setLastName] = useState("");
     const [email, setEmail] = useState("");
     const [phoneNumber, setPhoneNumber] = useState("");
-    const [password, setPassword] = useState("");
     const [profession, setProfession] = useState("");
     const [superior, setSuperior] = useState("");
     const [team, setTeam] = useState("");
@@ -89,7 +88,7 @@ const CreateUserModal = ({ closeModal, addUser }) => {
                 <h2 className="text-2xl font-semibold text-center text-gray-800 mb-4 border-b border-gray-300 pb-2">Crear Usuario</h2>
                 <form onSubmit={handleSubmit} className="space-y-4 p-4 max-h-[500px] overflow-y-auto">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Nombre</label>
+                        <label className="block text-sm font-medium text-gray-700">Nombre *</label>
                         <input
                             type="text"
                             value={name}
@@ -99,7 +98,7 @@ const CreateUserModal = ({ closeModal, addUser }) => {
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Apellido</label>
+                        <label className="block text-sm font-medium text-gray-700">Apellido *</label>
                         <input
                             type="text"
                             value={lastName}
@@ -109,7 +108,7 @@ const CreateUserModal = ({ closeModal, addUser }) => {
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Email</label>
+                        <label className="block text-sm font-medium text-gray-700">Email *</label>
                         <input
                             type="email"
                             value={email}
@@ -119,16 +118,7 @@ const CreateUserModal = ({ closeModal, addUser }) => {
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Contraseña</label>
-                        <input
-                            type="text"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Teléfono</label>
+                        <label className="block text-sm font-medium text-gray-700">Teléfono *</label>
                         <input
                             type="text"
                             value={phoneNumber}
@@ -138,7 +128,7 @@ const CreateUserModal = ({ closeModal, addUser }) => {
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Profesión</label>
+                        <label className="block text-sm font-medium text-gray-700">Profesión *</label>
                         <input
                             type="text"
                             value={profession}
@@ -171,6 +161,11 @@ const CreateUserModal = ({ closeModal, addUser }) => {
                                 </option>
                             ))}
                         </select>
+                    </div>
+                    <div>
+                        <center>
+                            <span className="text-xs text-gray-500">* Campos obligatorios</span>
+                        </center>
                     </div>
                     <div className="flex justify-end">
                         <button

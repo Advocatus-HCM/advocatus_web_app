@@ -128,11 +128,11 @@ const EmployeeManagement = () => {
 
     const fetchAssistants = async () => {
         try {
-            const response = await fetch('http://localhost:8001/get-all-assistants');
-            const data = await response.json();
-            setAssistants(data.assistants);
+            const response = await axios.get('http://localhost:8001/get-all-assistants');
+            setAssistants(Array.isArray(response.data.assistants) ? response.data.assistants : []);
         } catch (error) {
-            console.error('Error fetching assistants:', error);
+            console.error('Error fetching assistants:', error.message);
+            console.error('Detalles del error completo:', error); 
         }
     };
 
@@ -1043,8 +1043,8 @@ const EmployeeManagement = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
-                                    {filteredContracts.map((contract) => (
-                                        <tr key={contract._id}>
+                                    {filteredContracts.map((contract, index) => (
+                                        <tr key={contract._id || index}>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                                 {editingContract === contract.user_email ? (
                                                     <Select
