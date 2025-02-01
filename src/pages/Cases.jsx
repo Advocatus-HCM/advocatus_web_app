@@ -35,7 +35,7 @@ const Cases = () => {
             type: "Derecho Fiscal",
             subtype: "Evasión Fiscal",
             status: "Caso Cerrado (Fallo a favor)",
-            archived: true,
+            archived: false, // Este caso está cerrado pero no archivado
             involved_personnel: [
                 { person_id: "54321", name: "Alice Johnson", role: "Accountant" },
                 { person_id: "98765", name: "Bob Brown", role: "Lawyer" },
@@ -51,7 +51,7 @@ const Cases = () => {
             type: "Derecho Civil",
             subtype: "Contratos",
             status: "Caso Cerrado (Fallo en contra)",
-            archived: true,
+            archived: true, // Este caso está cerrado y archivado
             involved_personnel: [
                 { person_id: "11223", name: "Charlie Davis", role: "Lawyer" },
                 { person_id: "44556", name: "Diana Evans", role: "Mediator" },
@@ -94,7 +94,9 @@ const Cases = () => {
         return (
             c &&
             c.name &&
-            (activeTab === "activos" ? !c.archived : c.archived) &&
+            (activeTab === "activos" ? !c.archived && c.status === "En Proceso" : 
+             activeTab === "cerrados" ? (c.status === "Caso Cerrado (Fallo a favor)" || c.status === "Caso Cerrado (Fallo en contra)") : 
+             c.archived) &&
             (typeFilter === "Todos" || c.type === typeFilter) &&
             (subtypeFilter === "Todos" || c.subtype === subtypeFilter) &&
             (statusFilter === "Todos" || c.status === statusFilter) &&
@@ -139,6 +141,16 @@ const Cases = () => {
                         }`}
                     >
                         Casos Cerrados
+                    </button>
+                    <button
+                        onClick={() => handleTabChange("archivados")}
+                        className={`w-full sm:w-auto px-4 py-2 text-center text-lg font-medium ${
+                            activeTab === "archivados"
+                                ? "text-blue-600 border-b-2 border-blue-600"
+                                : "text-gray-600"
+                        }`}
+                    >
+                        Casos Archivados
                     </button>
                 </div>
 
@@ -282,7 +294,7 @@ const Cases = () => {
                                             className="text-red-600 hover:text-red-900"
                                             onClick={() => handleDeleteCase(c._id)}
                                         >
-                                            Eliminar
+                                            Archivar
                                         </button>
                                     </td>
                                 </tr>
