@@ -8,11 +8,7 @@ import './Login.css';
 //GraphQL Petition for Login
 const queryLogin= `
 mutation Signin($email: String!, $password: String!) {
-  signin(email: $email, password: $password) {
-    message
-    response
-    success
-  }
+  signin(email: $email, password: $password)
 }
 `;
 
@@ -46,11 +42,13 @@ const Login = () => {
         body: JSON.stringify({ query: queryLogin, variables: variablespeticion }),
       });
 
-      console.log('Response status:', response.status);
+      //console.log('Response status:', response.status);
+
       const result = await response.json();
       console.log(result);
       //Case when the response is OK and the login is successful
-      if (response.ok && result.data.signin !== null && result.data.signin.success) {
+      
+      if (result.data.signin.success) {
         const data = await result.data.signin.response;
         console.log('Login exitoso');
 
