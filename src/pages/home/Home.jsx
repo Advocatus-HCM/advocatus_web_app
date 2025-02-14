@@ -57,19 +57,19 @@ Busque soluciones personalizadas.</h2>
 
       <label className='label-home'>Nombre</label>
       <br />
-      <input className='input-home' type="text" placeholder='Gabriel Delgado'/>
+      <input className='input-home' type="text" placeholder='Advo Catus'/>
 
       <br />
 
       <label  className='label-home'>Correo</label>
       <br />
-      <input className='input-home'  type="text"  placeholder='Pepitomonda@gmail.com' />
+      <input className='input-home'  type="text"  placeholder='correo@dominio.com' />
       
       <br />
 
       <label className='label-home'>Número de teléfono</label>
       <br />
-      <input className='input-home'  type="text"  placeholder='3196736325'/>
+      <input className='input-home'  type="text"  placeholder='3124567890'/>
 
       <br />
       
