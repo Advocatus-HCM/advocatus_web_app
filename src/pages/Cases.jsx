@@ -60,7 +60,7 @@ const Cases = () => {
                 redirect: "follow",
             };
     
-            const response = await fetch("http://localhost:4000", requestOptions);
+            const response = await fetch(`${import.meta.env.VITE_AG_URL}/`, requestOptions);
             const result = await response.json();
     
             console.log("Respuesta completa del backend:", result);

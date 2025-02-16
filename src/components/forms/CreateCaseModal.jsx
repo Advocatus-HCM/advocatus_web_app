@@ -33,7 +33,7 @@ const CreateCaseModal = ({ closeModal, addUser }) => {
     const fetchUsers = async () => {
         try {
             const response = await axios.post(
-                "http://localhost:4000/", 
+                `${import.meta.env.VITE_AG_URL}/`, 
                 {
                     query: queryGet, 
                     variables: {
@@ -97,7 +97,7 @@ const handleSubmit = async (e) => {
     `;
 
     try {
-        const response = await axios.post("http://localhost:4000/", {
+        const response = await axios.post(`${import.meta.env.VITE_AG_URL}/`, {
             query,
             variables: caseData,
         });

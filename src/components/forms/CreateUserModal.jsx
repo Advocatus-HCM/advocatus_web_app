@@ -16,7 +16,7 @@ const CreateUserModal = ({ closeModal, addUser }) => {
     const [teams, setTeams] = useState([]);
 
     useEffect(() => {
-        axios.get('http://localhost:8001/get-users')
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/get-users`)
             .then(response => {
                 const managers = response.data.filter(user => user.role === 'gerente');
                 setSuperiors(managers);
@@ -25,7 +25,7 @@ const CreateUserModal = ({ closeModal, addUser }) => {
                 console.error('Error fetching users:', error);
             });
 
-        axios.get('http://localhost:8001/get-teams')
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/get-teams`)
             .then(response => {
                 setTeams(response.data);
             })
@@ -52,7 +52,7 @@ const CreateUserModal = ({ closeModal, addUser }) => {
             user.team = team;
         }
 
-        axios.post('http://localhost:8001/create-user', user)
+        axios.post(`${process.env.NEXT_PUBLIC_API_URL}/create-user`, user)
             .then(response => {
                 Swal.fire({
                     title: 'Usuario creado',

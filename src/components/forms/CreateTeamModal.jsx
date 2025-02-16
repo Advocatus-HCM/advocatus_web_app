@@ -11,7 +11,7 @@ const CreateTeamModal = ({ closeModal, addTeam }) => {
     const [leaders, setLeaders] = useState([]);
 
     useEffect(() => {
-        axios.get('http://localhost:8001/get-users')
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/get-users`)
             .then(response => {
                 const managers = response.data.filter(user => user.role === 'gerente');
                 setLeaders(managers);
@@ -29,7 +29,7 @@ const CreateTeamModal = ({ closeModal, addTeam }) => {
             scope
         };
 
-        axios.post('http://localhost:8001/create-team', team)
+        axios.post(`${process.env.NEXT_PUBLIC_API_URL}/create-team`, team)
             .then(response => {
                 Swal.fire({
                     title: 'Equipo creado',

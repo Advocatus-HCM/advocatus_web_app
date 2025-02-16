@@ -33,7 +33,7 @@ const Login = () => {
     };
     
     try {
-      const response = await fetch('http://localhost:4000/', {
+      const response = await fetch(`${import.meta.env.VITE_AG_URL}/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
