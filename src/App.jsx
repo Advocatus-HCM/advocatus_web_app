@@ -8,6 +8,7 @@ import AccountSettings from './pages/AccountSettings.jsx';
 import Home from "./pages/home/Home.jsx";
 import Cases from './pages/Cases.jsx';
 import ChangePassword from './pages/ChangePassword';
+import Attendance from './pages/Attendance.jsx';
 import { AuthProvider } from './context/AuthContext';
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
           <Route path="/account-settings" element={<AccountSettings />} />
           <Route path="/cases" element={<Cases />} />
           <Route path="/change-password" element={<ChangePassword />} />
+          <Route path="/attendance" element={<Attendance />} />
         </Routes>
       </div>
     </AuthProvider>
