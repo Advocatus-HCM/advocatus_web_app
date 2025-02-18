@@ -83,7 +83,7 @@ const EmployeeManagement = () => {
     const fetchUserEmails = async () => {
         try {
             const response = await axios.get(`${import.meta.env.VITE_PM_URL}/get-users`);
-            const emails = response.data.map((user) => ({ label: user.email, value: user.email }));
+            const emails = Array.isArray(response.data) ? response.data.map((user) => ({ label: user.email, value: user.email })) : [];
             setUserEmails(emails);
         } catch (error) {
             console.error("Error fetching user emails:", error);
@@ -1019,7 +1019,7 @@ const EmployeeManagement = () => {
                                     className="w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2"
                                 >
                                     <option value="Todos">Todos los tipos</option>
-                                    {contractTypes.map((type) => (
+                                    {Array.isArray(contractTypes) && contractTypes.map((type) => (
                                         <option key={type} value={type}>
                                             {type}
                                         </option>
