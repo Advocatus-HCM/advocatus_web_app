@@ -51,20 +51,24 @@ const Login = () => {
       if (result.data.signin.success) {
         const data = await result.data.signin.response;
         console.log('Login exitoso');
-
-        //Set Cookies
+    
+        // Set Cookies
         document.cookie = `token=${data.access_token}; path=/;`;
-        //document.cookie = `token_type=${data.token_type}; path=/;`;
         document.cookie = `email=${email}; path=/;`;
         document.cookie = `role=${data.role}; path=/;`;
-        //Success Login and redirect to dashboard
-        navigate('/dashboard');
-
-      } else {
+    
+        // Check if password needs to be changed
+        if (!data.PasswordChanged) {
+            navigate('/change-password');
+        } else {
+            // Success Login and redirect to dashboard
+            navigate('/dashboard');
+        }
+    } else {
         // Email and/or password are incorrect
         console.error('Nombre de Usuario y/o Contraseña Incorrectos');
         setShowError(true);
-      }
+    }
     } catch (error) {
       // Error in the request
       console.error('Error en la petición:', error);
