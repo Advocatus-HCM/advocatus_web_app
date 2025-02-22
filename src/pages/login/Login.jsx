@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar2 from '../../components/layout/navbar/Navbar2';
 import Footer from '../../components/layout/footer/Footer';
-
+import { FaEye, FaEyeSlash } from 'react-icons/fa'; // Importar íconos de ojo
 import './Login.css';
 
 //GraphQL Petition for Login
-const queryLogin= `
+const queryLogin = `
 mutation Signin($email: String!, $password: String!) {
   signin(email: $email, password: $password)
 }
@@ -17,6 +17,7 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false); // Estado para controlar la animación de carga
+  const [showPassword, setShowPassword] = useState(false); // Estado para controlar la visibilidad de la contraseña
   const navigate = useNavigate(); // Crear una instancia de useNavigate
 
   const handleLogin = async (e) => {
@@ -31,7 +32,7 @@ const Login = () => {
       email: email,
       password: password,
     };
-    
+
     try {
       const response = await fetch(`${import.meta.env.VITE_AG_URL}/`, {
         method: 'POST',
@@ -42,33 +43,29 @@ const Login = () => {
         body: JSON.stringify({ query: queryLogin, variables: variablespeticion }),
       });
 
-      //console.log('Response status:', response.status);
-
       const result = await response.json();
-      console.log(result);
-      //Case when the response is OK and the login is successful
-      
+
       if (result.data.signin.success) {
         const data = await result.data.signin.response;
         console.log('Login exitoso');
-    
+
         // Set Cookies
         document.cookie = `token=${data.access_token}; path=/;`;
         document.cookie = `email=${email}; path=/;`;
         document.cookie = `role=${data.role}; path=/;`;
-    
+
         // Check if password needs to be changed
         if (!data.PasswordChanged) {
-            navigate('/change-password');
+          navigate('/change-password');
         } else {
-            // Success Login and redirect to dashboard
-            navigate('/dashboard');
+          // Success Login and redirect to dashboard
+          navigate('/dashboard');
         }
-    } else {
+      } else {
         // Email and/or password are incorrect
         console.error('Nombre de Usuario y/o Contraseña Incorrectos');
         setShowError(true);
-    }
+      }
     } catch (error) {
       // Error in the request
       console.error('Error en la petición:', error);
@@ -94,13 +91,18 @@ const Login = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Correo Electrónico"
               />
-              <input
-                type="password"
-                className='inputLogin'
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Contraseña"
-              />
+              <div className="password-container">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  className='inputLogin'
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Contraseña"
+                />
+                <span className="password-toggle" onClick={() => setShowPassword(!showPassword)}>
+                  {showPassword ? <FaEye /> : <FaEyeSlash />}
+                </span>
+              </div>
               <a href="#" className='aLogin'><u>¿Has Olvidado tu Contraseña?</u></a>
               {isLoading ? (
                 //Loading Animation
@@ -108,7 +110,6 @@ const Login = () => {
               ) : (
                 <button type="submit" className='ButtonLogin'>Iniciar Sesión</button>
               )}
-              {/* <p className="pLogin">¿No tienes una cuenta? <a href='/home' className='refRegister'><u>Regístrate</u></a></p> */}
             </form>
           </div>
         </div>
