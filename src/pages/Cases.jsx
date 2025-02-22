@@ -4,6 +4,7 @@ import Sidebar from "../components/layout/Sidebar";
 import Cookies from "js-cookie"; // Importar js-cookie para manejar las cookies
 import CreateCaseModal from "../components/forms/CreateCaseModal";
 import UpdateCaseModal from "../components/forms/UpdateCaseModal";
+import axios from "axios";
 
 const Cases = () => {
     const [activeTab, setActiveTab] = useState("activos");
@@ -14,31 +15,27 @@ const Cases = () => {
     const [cases, setCases] = useState([]); // Estado para almacenar los casos obtenidos del backend
     const [loading, setLoading] = useState(true); // Estado para manejar la carga de datos
     const [isModalOpen, setIsModalOpen] = useState(false);
-
     const [type, setType] = useState("");
     const [subtype, setSubtype] = useState("");
-
-
     const [selectedCase, setSelectedCase] = useState(null);
     const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
-
-    // Obtener el token y el email desde las cookies
     const token = Cookies.get("token");
     const email = Cookies.get("email");
+    const myToken = Cookies.get("token");
 
-    // Función para obtener los casos desde el backend
-    // Función para obtener los casos desde el backend
+    const [involvedPersonnel, setInvolvedPersonnel] = useState([]);
+
+
     const fetchCases = async () => {
         if (!token || !email) {
             Swal.fire("Error!", "No se encontró el token o el email en las cookies.", "error");
             setLoading(false);
             return;
         }
-    
         try {
             const myHeaders = new Headers();
             myHeaders.append("Content-Type", "application/json");
-    
+
             const graphql = JSON.stringify({
                 query: `
                     mutation GetAllCases($userAuth: UserAuth!) {
@@ -69,10 +66,8 @@ const Cases = () => {
                 throw new Error(result.errors[0].message);
             }
     
-            // Parse the JSON string returned by the backend
             let casesData = result.data.getAllCases;
             
-            // If casesData is a string, parse it
             if (typeof casesData === 'string') {
                 try {
                     casesData = JSON.parse(casesData);
@@ -82,7 +77,6 @@ const Cases = () => {
                 }
             }
     
-            // Ensure casesData has a response array
             const processedCases = Array.isArray(casesData) 
                 ? casesData.map(c => ({
                     ...c,
@@ -105,35 +99,64 @@ const Cases = () => {
             setLoading(false);
         }
     };
-    
 
-    // Llamar a fetchCases cuando el componente se monta
+
+
+    const queryGet= `
+    mutation GetAllUsersPersonalManager($userAuth: UserAuth!) {
+     getAllUsersPersonalManager(userAuth: $userAuth)
+    }
+`;
+
+
+    const fetchUsers = async () => {
+        try {
+            const response = await axios.post(
+                "http://localhost:4000/", 
+                {
+                    query: queryGet, 
+                    variables: {
+                        userAuth: {
+                            email: "admin@admin.com",
+                            token: myToken, 
+                        },
+                    },
+                },
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+           
+        const allUsers = Array.isArray(response.data.data.getAllUsersPersonalManager.response) ? response.data.data.getAllUsersPersonalManager.response : [];
+
+        const personnel = allUsers.filter(user => ["Abogado"].includes(user.profession))
+            .map(user => ({
+                label: `${user.name} ${user.last_name}`,  
+                value: user.email 
+            }));
+        setInvolvedPersonnel(personnel);
+        console.log("personal manin",personnel)
+
+    } catch (error) {
+        console.error("Error fetching users:", error);
+    }
+};
+    
     useEffect(() => {
         fetchCases();
+        fetchUsers();
     }, []);
 
     const handleTabChange = (tab) => {
         setActiveTab(tab);
         setSearchQuery("");
-        setStatusFilter("Todos"); // Resetear el filtro de estado al cambiar de pestaña
+        setStatusFilter("Todos"); 
     };
 
-    const handleDeleteCase = async (caseId) => {
 
-
-
-
-
-
-
-
-
-
-
-
-        
-
-
+    const handleArchiveCase = async (caseId) => {
         const result = await Swal.fire({
             title: '¿Estás seguro?',
             text: "No podrás revertir esto",
@@ -156,17 +179,14 @@ const Cases = () => {
         }
     };
 
-
-
-
-
     const filteredCases = Array.isArray(cases) ? cases.filter((c) => {
         const isMatchingTab = 
-            (activeTab === "activos" && c.archived !== "True" && c.status === "in_process") ||
+            (activeTab === "activos" && c.archived !== "True" && c.status === "in_process" || c.status === "Proceso") ||
             (activeTab === "cerrados" && (
                 c.status === "Caso Cerrado (Fallo a favor)" || 
                 c.status === "Caso Cerrado (Fallo en contra)" || 
-                c.status === "Cerrado"
+                c.status === "Cerrado"|| 
+                c.status === "Cerrados"
             )) ||
             (activeTab === "archivados" && c.archived === "True");
     
@@ -198,19 +218,13 @@ const Cases = () => {
         );
     }
 
-
-
-
-
     const openCaseModal = () => {
         setIsModalOpen(true);
     };
 
     const closeCaseModal = () => {
         setIsModalOpen(false);
-      
     };
-
 
     const options = {
         "Derecho Penal": ["Homicidio", "Fraude", "Robo", "Delitos informáticos", "Corrupción", "Lavado de dinero", "Agresión y violencia doméstica"],
@@ -224,12 +238,13 @@ const Cases = () => {
         "Derecho de Propiedad Intelectual": ["Derechos de autor", "Patentes y marcas", "Litigios por plagio"]
     };
 
-
-
     const handleEditCase = (caseData) => {
         setSelectedCase(caseData);
         setIsUpdateModalOpen(true);
     };
+
+
+
 
 
 
@@ -343,26 +358,7 @@ const Cases = () => {
                                  </div>
                              )}
                     </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Filtrar por estado
-                        </label>
-                        <select
-                            value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.target.value)}
-                            className="w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2"
-                        >
-                            <option value="Todos">Todos los estados</option>
-                            {activeTab === "activos" ? (
-                                <option value="in_process">En Proceso</option>
-                            ) : (
-                                <>
-                                    <option value="Caso Cerrado (Fallo a favor)">Caso Cerrado (Fallo a favor)</option>
-                                    <option value="Caso Cerrado (Fallo en contra)">Caso Cerrado (Fallo en contra)</option>
-                                </>
-                            )}
-                        </select>
-                    </div>
+                 
                 </div>
 
                 {/* Tabla de casos */}
@@ -427,7 +423,7 @@ const Cases = () => {
                                         </button>
                                         <button
                                             className="text-red-600 hover:text-red-900"
-                                            onClick={() => handleDeleteCase(c._id)}
+                                            onClick={() => handleArchiveCase(c._id)}
                                         >
                                             Archivar
                                         </button>
@@ -438,13 +434,23 @@ const Cases = () => {
                     </table>
                 </div>
             </div>
+          {isModalOpen && (
+    <CreateCaseModal 
+        closeModal={() => {
+            closeCaseModal();
+            fetchCases();
+        }}  
+        involvedPersonnel={involvedPersonnel} 
+        setInvolvedPersonnel={setInvolvedPersonnel} 
+    />
+)}
 
-            {isModalOpen && <CreateCaseModal closeModal={closeCaseModal}  />}
             {isUpdateModalOpen && selectedCase && (
                 <UpdateCaseModal 
                     closeModal={() => {
                         setIsUpdateModalOpen(false);
                         setSelectedCase(null);
+                        fetchCases();
                     }} 
                     caseData={selectedCase}
                 />

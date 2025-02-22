@@ -7,7 +7,7 @@ import Cookies from "js-cookie";
 
 const myToken = Cookies.get("token");
 
-const InsertAttendanceModal = ({ closeModal }) => {
+const InsertAttendanceModal = ({ closeModal,attendanceData }) => {
   const [abogadoId, setAbogadoId] = useState(null);
   const [fecha, setFecha] = useState("");
   const [entrada, setEntrada] = useState("");
@@ -18,91 +18,73 @@ const InsertAttendanceModal = ({ closeModal }) => {
   const [abogados, setAbogados] = useState([]);
 
   useEffect(() => {
-    fetchAbogados();
-  }, []);
-
-  const fetchAbogados = async () => {
-    try {
-      const response = await axios.post(
-        "http://localhost:4000/", 
-        {
-          query: `
-            query GetAllAbogados($userAuth: UserAuth!) {
-              getAllUsersPersonalManager(userAuth: $userAuth) {
-                response {
-                  _id
-                  name
-                  last_name
-                }
-              }
-            }
-          `,
-          variables: {
-            userAuth: {
-              email: "admin@admin.com",
-              token: myToken,
-            },
-          },
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      const allAbogados =
-        response.data.data.getAllUsersPersonalManager.response.map((user) => ({
-          label: `${user.name} ${user.last_name}`,
-          value: user._id,
-        }));
-
-      setAbogados(allAbogados);
-    } catch (error) {
-      console.error("Error fetching abogados:", error);
-    }
-  };
+      console.log("Contenido de attendanceData:", attendanceData);
+      if (attendanceData && attendanceData.email) {
+        setAbogadoId(attendanceData.email); // Ajusta según la estructura de attendanceData
+      }
+    }, [attendanceData]);
+    
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const attendanceData = {
-      abogado_id: abogadoId,
-      fecha,
-      entrada,
-      salida,
-      tardanza,
-      tipo,
-      motivo,
-    };
-
+  
+    if (!fecha || !entrada || !salida) {
+      Swal.fire({
+        title: "Error",
+        text: "Todos los campos son obligatorios",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+      return;
+    }
+  
     try {
+      // Convertimos la fecha y las horas a objetos Date, asegurando que sean válidos
+      const fechaISO = new Date(fecha);
+      const entradaISO = new Date(`${fecha}T${entrada}:00.000Z`);
+      const salidaISO = new Date(`${fecha}T${salida}:00.000Z`);
+  
+      if (isNaN(entradaISO.getTime()) || isNaN(salidaISO.getTime())) {
+        throw new Error("Formato de hora inválido");
+      }
+  
+      const attendanceData = {
+        abogado_id: abogadoId,
+        fecha: fechaISO.toISOString(),
+        entrada: entradaISO.toISOString(),
+        salida: salidaISO.toISOString(),
+        tardanza,
+        tipo,
+        motivo,
+      };
+  
       const response = await axios.post("http://localhost:8003/insertattendance", attendanceData, {
         headers: {
           Authorization: `Bearer ${myToken}`,
           "Content-Type": "application/json",
         },
       });
-
+  
       Swal.fire({
         title: "Éxito",
         text: "Asistencia registrada exitosamente",
         icon: "success",
         confirmButtonText: "OK",
       });
-
+  
       console.log("Respuesta del servidor:", response.data);
       closeModal();
     } catch (error) {
       console.error("Error al registrar la asistencia:", error);
       Swal.fire({
         title: "Error",
-        text: "Hubo un problema al registrar la asistencia",
+        text: error.message || "Hubo un problema al registrar la asistencia",
         icon: "error",
         confirmButtonText: "OK",
       });
     }
   };
+  
 
   return (
     <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center z-50">
@@ -114,15 +96,18 @@ const InsertAttendanceModal = ({ closeModal }) => {
           Registrar Asistencia
         </h2>
         <form onSubmit={handleSubmit} className="space-y-4 p-4 max-h-[500px] overflow-y-auto">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Abogado *</label>
-            <Select
-              options={abogados}
-              onChange={() => setAbogadoId(selectedOption.value)}
-              className="mt-1"
-              placeholder="Seleccione un abogado"
+        <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Abogado *
+            </label>
+            <input
+              disabled
+              value={abogadoId}
+              onChange={(e) => setAbogadoId(e.target.value)}
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
               required
             />
+          
           </div>
 
           <div>

@@ -3,13 +3,10 @@ import { MdClose } from "react-icons/md";
 import Swal from 'sweetalert2';
 import axios from 'axios';
 import Select from 'react-select';
-// import Cookies from "universal-cookie";
 import Cookies from "js-cookie";
-
 const myToken = Cookies.get("token");
 
-
-const CreateCaseModal = ({ closeModal, addUser }) => {
+const CreateCaseModal = ({ closeModal, involvedPersonnel,setInvolvedPersonnel }) => {
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
     const [type, setType] = useState("");
@@ -64,6 +61,7 @@ const CreateCaseModal = ({ closeModal, addUser }) => {
         console.error("Error fetching users:", error);
     }
 };
+   
 
 
 const handleSubmit = async (e) => {
@@ -86,9 +84,6 @@ const handleSubmit = async (e) => {
             token: myToken, 
         }
     };
-
-
-
 
     const query = `
         mutation CreateCase($data: JSON!, $userAuth: UserAuth!) {
@@ -121,7 +116,6 @@ const handleSubmit = async (e) => {
         });
     }
 };
-
     const options = {
         "Derecho Penal": ["Homicidio", "Fraude", "Robo", "Delitos informáticos", "Corrupción", "Lavado de dinero", "Agresión y violencia doméstica"],
         "Derecho Civil": ["Divorcio y separación", "Custodia de menores", "Herencias y testamentos", "Responsabilidad civil", "Arrendamientos y desahucios", "Demandas por daños y perjuicios"],
@@ -135,7 +129,6 @@ const handleSubmit = async (e) => {
     };
     
     const [personnelInputs, setPersonnelInputs] = useState([0]); 
-
     const handleAddPersonnelField = () => {
         // Añadir un nuevo campo vacío al arreglo personnelInputs
         setPersonnelInputs([...personnelInputs, '']);
@@ -157,6 +150,7 @@ const handleSubmit = async (e) => {
         updatedPersonnel[index] = selectedOption;
         setInvolvedPersonnel(updatedPersonnel);
     };
+
 
     return (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center z-50">
@@ -188,11 +182,6 @@ const handleSubmit = async (e) => {
                             required
                         />
                     </div>
-
-
-
-
-
             <div>
             <label className="block text-sm font-medium text-gray-700">Tipo *</label>
             <select
@@ -224,7 +213,6 @@ const handleSubmit = async (e) => {
                 </div>
             )}
         </div>
-
                     <div>
                            <label className="block text-sm font-medium text-gray-700">Estado *</label>
                            <select
@@ -238,9 +226,6 @@ const handleSubmit = async (e) => {
                                <option value="Cerrado">Cerrado</option>
                            </select>
                         </div>
-
-
-  
 
                         <div>
                     <label className="block text-sm font-medium text-gray-700">Encargados</label>
@@ -282,10 +267,7 @@ const handleSubmit = async (e) => {
 
                 </form>
             </div>
-
-
         </div>
     );
 };
-
 export default CreateCaseModal;

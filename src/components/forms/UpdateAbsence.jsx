@@ -6,20 +6,30 @@ import Cookies from "js-cookie";
 
 const myToken = Cookies.get("token");
 
-const InsertAbsenceModal = ({ closeModal, attendanceData }) => {
+const UpdateAbsence = ({ closeModal, attendanceData, isEditing = false, absenceToEdit = null }) => {
   const [abogadoId, setAbogadoId] = useState("");
   const [fecha, setFecha] = useState("");
   const [tipo, setTipo] = useState("");
   const [motivo, setMotivo] = useState("");
   const [documentoRespaldo, setDocumentoRespaldo] = useState("");
 
+
+  console.log("fds",absenceToEdit)
+
   useEffect(() => {
-    console.log("Contenido de attendanceData:", attendanceData);
-    if (attendanceData && attendanceData.email) {
-      setAbogadoId(attendanceData.email); 
+    if (isEditing && absenceToEdit) {
+      // If editing, populate form with existing data
+      setAbogadoId(absenceToEdit.abogado_id);
+      setFecha(new Date(absenceToEdit.fecha).toISOString().split('T')[0]);
+      setTipo(absenceToEdit.tipo);
+      setMotivo(absenceToEdit.motivo);
+      setDocumentoRespaldo(absenceToEdit.documento_respaldo || "");
+    } else if (attendanceData && attendanceData.email) {
+      // If creating new, just set the lawyer's email
+      setAbogadoId(attendanceData.email);
     }
-  }, [attendanceData]);
-  
+  }, [attendanceData, isEditing, absenceToEdit]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -42,31 +52,56 @@ const InsertAbsenceModal = ({ closeModal, attendanceData }) => {
     };
 
     try {
-      const response = await axios.post(
-        "http://localhost:8003/report-absences",
-        absenceData,
-        {
-          headers: {
-            "Content-Type": "application/json",
+      let response;
       
-          },
-        }
-      );
+      if (isEditing) {
+     
+        response = await axios.put(
+          `http://localhost:8003/update-absence/${abogadoId}`,
+          absenceData,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        
+        Swal.fire({
+          title: "Éxito",
+          text: "Ausencia actualizada exitosamente",
+          icon: "success",
+          confirmButtonText: "OK",
+        });
+      } else {
 
-      if (response.data) {
+        response = await axios.post(
+          "http://localhost:8003/report-absences",
+          absenceData,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        
         Swal.fire({
           title: "Éxito",
           text: "Ausencia registrada exitosamente",
           icon: "success",
           confirmButtonText: "OK",
         });
+      }
+
+      if (response.data) {
         closeModal();
       }
     } catch (error) {
-      console.error("Error al registrar la ausencia:", error);
+      console.error("Error al procesar la ausencia:", error);
       Swal.fire({
         title: "Error",
-        text: "Hubo un problema al registrar la ausencia",
+        text: isEditing 
+          ? "Hubo un problema al actualizar la ausencia"
+          : "Hubo un problema al registrar la ausencia",
         icon: "error",
         confirmButtonText: "OK",
       });
@@ -83,7 +118,7 @@ const InsertAbsenceModal = ({ closeModal, attendanceData }) => {
           <MdClose className="h-6 w-6" />
         </button>
         <h2 className="text-2xl font-semibold text-center text-gray-800 mb-4 border-b border-gray-300 pb-2">
-          Registrar Ausencia
+          {isEditing ? "Editar Ausencia" : "Registrar Ausencia"}
         </h2>
         <form onSubmit={handleSubmit} className="space-y-4 p-4">
           <div>
@@ -93,11 +128,9 @@ const InsertAbsenceModal = ({ closeModal, attendanceData }) => {
             <input
               disabled
               value={abogadoId}
-              onChange={(e) => setAbogadoId(e.target.value)}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-gray-100"
               required
             />
-          
           </div>
 
           <div>
@@ -158,7 +191,7 @@ const InsertAbsenceModal = ({ closeModal, attendanceData }) => {
               type="submit"
               className="bg-blue-500 text-white px-4 py-2 rounded-md shadow-sm hover:bg-blue-600"
             >
-              Registrar
+              {isEditing ? "Actualizar" : "Registrar"}
             </button>
           </div>
         </form>
@@ -167,4 +200,4 @@ const InsertAbsenceModal = ({ closeModal, attendanceData }) => {
   );
 };
 
-export default InsertAbsenceModal;
+export default UpdateAbsence;

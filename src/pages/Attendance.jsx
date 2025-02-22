@@ -6,6 +6,7 @@ import Select from "react-select";
 import InsertAttendanceModal from "../components/forms/InsertAttendanceModal";
 import InsertAbsenceModal from "../components/forms/InsertAbsenceModal";
 import ShowReport from "../components/forms/ShowReport";
+import UpdateAbsence from "../components/forms/UpdateAbsence";
 
 const Attendance = () => {
     const [teamFilter, setTeamFilter] = useState("Todos");
@@ -15,6 +16,9 @@ const Attendance = () => {
     const [tempTeamData, setTempTeamData] = useState({});
 
     const [employees, setEmployees] = useState([]);
+    const [attendances, setAttendances] = useState([]);
+    const [absences, setAbsences] = useState([]);
+
     const [teams, setTeams] = useState([]);
     const [professions, setProfessions] = useState([]);
     const [assistants, setAssistants] = useState([]);
@@ -42,6 +46,8 @@ const Attendance = () => {
         fetchProfessions();
         fetchUserEmails();
         fetchContractTypes();
+        fetchAttendances();
+        fetchAbsences();
     }, []);
 
     const attendanceData = {
@@ -208,6 +214,98 @@ const Attendance = () => {
         setSearchQuery(''); 
     };    
 
+
+    const [emailFilter, setEmailFilter] = useState("");
+    
+    const [emailFilter2, setEmailFilter2] = useState("");
+
+const fetchAttendances = async () => {
+    try {
+        const response = await axios.get("http://localhost:8003/get-attendances");
+        let allAttendances = Array.isArray(response.data) ? response.data : [];
+
+        if (emailFilter) {
+            allAttendances = allAttendances.filter(attendance => 
+                attendance.abogado_id.toLowerCase().includes(emailFilter.toLowerCase())
+            );
+        }
+
+        setAttendances(allAttendances);
+    } catch (error) {
+        console.error("Error fetching attendances:", error);
+    }
+};
+
+const fetchAbsences = async () => {
+    try {
+        const response = await axios.get("http://localhost:8003/get-absences");
+        let allAbsences = Array.isArray(response.data) ? response.data : [];
+
+        if (emailFilter2) {
+            allAbsences = allAbsences.filter(absence => 
+                absence.abogado_id.toLowerCase().includes(emailFilter2.toLowerCase())
+            );
+        }
+
+        setAbsences(allAbsences);
+    } catch (error) {
+        console.error("Error fetching absences:", error);
+    }
+};
+
+// Llamar a las funciones automáticamente cuando cambie el emailFilter
+
+useEffect(() => {
+    fetchAbsences();
+}, [emailFilter2]); // Se ejecuta cada vez que cambia emailFilter
+
+
+useEffect(() => {
+    fetchAttendances();
+}, [emailFilter]); // Se ejecuta cada vez que cambia emailFilter
+
+
+
+const deleteAbsence = async (abogadoId) => {
+    try {
+        // Check if we have a valid abogadoId
+        if (!abogadoId) {
+            Swal.fire("Error", "No se ha seleccionado un usuario para eliminar la ausencia", "error");
+            return;
+        }
+
+        const response = await axios.delete("http://localhost:8003/delete-absence", {
+            data: { abogado_id: abogadoId }
+        });
+
+        Swal.fire("Eliminado", response.data.message, "success");
+        fetchAbsences(); // Refrescar la lista de ausencias
+    } catch (error) {
+        Swal.fire("Error", "Hubo un problema al eliminar la ausencia", "error");
+        console.error("Error al eliminar la ausencia:", error);
+    }
+};
+
+
+
+const [selectedAbsence, setSelectedAbsence] = useState(null);
+const [isEditingAbsence, setIsEditingAbsence] = useState(false);
+
+// Replace the existing handleEditAbsence function with:
+const handleEditAbsence = (absence) => {
+    setSelectedAbsence(absence);
+    setIsEditingAbsence(true);
+};
+
+// Add a function to close the edit modal:
+const closeEditAbsenceModal = () => {
+    setIsEditingAbsence(false);
+    setSelectedAbsence(null);
+    fetchAbsences();
+};
+
+
+    
     return (
         <div className="flex min-h-screen">
             <Sidebar />
@@ -258,7 +356,7 @@ const Attendance = () => {
                         <div className="flex flex-row justify-center items-center gap-4 mb-6 w-full">
                             <input
                                 type="text"
-                                placeholder="Escribe el correo del empleado..."
+                                placeholder="Escribe el correo del usuario..."
                                 className="w-full sm:w-3/4 lg:w-2/5 max-w-lg rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -479,25 +577,24 @@ const Attendance = () => {
                     </>
                 )}
 
-                {/* Contenido de la pestaña de Equipos */}
+                {/* Contenido de la pestaña de attendance */}
                 {activeTab === "equipos" && (
                     <>
                         {/* Buscador */}
-                        <div className="flex flex-row justify-center items-center gap-4 mb-6 w-full">
-                            <input
-                                type="text"
-                                placeholder="Escribe el correo del empleado..."
-                                className="w-full sm:w-3/4 lg:w-2/5 max-w-lg rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                            />
-                            <button
+                     <div className="flex flex-row justify-center items-center gap-4 mb-6 w-full">
+    <input
+        type="text"
+        placeholder="Escribe el correo del usuario..."
+        className="w-full sm:w-3/4 lg:w-2/5 max-w-lg rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2"
+        value={emailFilter}
+        onChange={(e) => setEmailFilter(e.target.value)}
+    />
+         <button
                                 className="bg-blue-600 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-700"
                             >
                                 Buscar
                             </button>
-                        </div>
-
+</div>
                         <div className="overflow-x-auto bg-white shadow rounded-lg">
                             <table className="min-w-full divide-y divide-gray-200">
                                 <thead className="bg-gray-50">
@@ -525,92 +622,21 @@ const Attendance = () => {
                                         </th>
                                     </tr>
                                 </thead>
+
                                 <tbody className="bg-white divide-y divide-gray-200">
-                                    {filteredTeams.map((team) => (
-                                        <tr key={team.name}>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 min-w-[150px]">
-                                                {editingTeam === team.name ? (
-                                                    <input
-                                                        type="text"
-                                                        value={tempTeamData.name !== undefined ? tempTeamData.name : team.name}
-                                                        onChange={(e) => handleTeamChange("name", e.target.value)}
-                                                        className="border border-gray-300 rounded-md p-2 w-full"
-                                                    />
-                                                ) : (
-                                                    team.name
-                                                )}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 min-w-[150px]">
-                                                {editingTeam === team.name ? (
-                                                    <select
-                                                        value={tempTeamData.leader !== undefined ? tempTeamData.leader : team.leader}
-                                                        onChange={(e) => handleTeamChange("leader", e.target.value)}
-                                                        className="border border-gray-300 rounded-md p-2 w-full"
-                                                    >
-                                                        <option value="">Selecciona un líder</option>
-                                                        {leaderEmails.map((email) => (
-                                                            <option key={email} value={email}>
-                                                                {email}
-                                                            </option>
-                                                        ))}
-                                                    </select>
-                                                ) : (
-                                                    team.leader
-                                                )}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 min-w-[150px]">
-                                                {editingTeam === team.name ? (
-                                                    <input
-                                                        type="text"
-                                                        value={tempTeamData.scope !== undefined ? tempTeamData.scope : team.scope}
-                                                        onChange={(e) => handleTeamChange("scope", e.target.value)}
-                                                        className="border border-gray-300 rounded-md p-2 w-full"
-                                                    />
-                                                ) : (
-                                                    team.scope
-                                                )}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium min-w-[100px]">
-                                                {editingTeam === team.name ? (
-                                                    <>
-                                                        <button
-                                                            onClick={() => handleSaveTeam(team.name)}
-                                                            className="text-blue-600 hover:text-blue-900 mr-4"
-                                                        >
-                                                            Guardar
-                                                        </button>
-                                                        <button
-                                                            onClick={() => {
-                                                                setEditingTeam(null);
-                                                                setTempTeamData({});
-                                                            }}
-                                                            className="text-red-600 hover:text-red-900"
-                                                        >
-                                                            Cancelar
-                                                        </button>
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <button
-                                                            onClick={() => {
-                                                                setEditingTeam(team.name);
-                                                                setTempTeamData(team);
-                                                            }}
-                                                            className="text-blue-600 hover:text-blue-900 mr-4"
-                                                        >
-                                                            Editar
-                                                        </button>
-                                                        <button
-                                                            className="text-red-600 hover:text-red-900"
-                                                            onClick={() => handleDeleteTeam(team.name)}
-                                                        >
-                                                            Eliminar
-                                                        </button>
-                                                    </>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    ))}
+                                   {attendances.map((attendance, index) => (
+                                       <tr key={attendance._id || index}>
+                                           <td className="px-6 py-4 text-sm text-gray-900">{attendance.abogado_id}</td>
+                                           <td className="px-6 py-4 text-sm text-gray-500">{new Date(attendance.fecha).toLocaleDateString()}</td>
+                                           <td className="px-6 py-4 text-sm text-gray-500">{new Date(attendance.entrada).toLocaleTimeString()}</td>
+                                           <td className="px-6 py-4 text-sm text-gray-500">{new Date(attendance.salida).toLocaleTimeString()}</td>
+                                           <td className="px-6 py-4 text-sm text-gray-500">
+                                               {attendance.tardanza ? "Sí" : "No"}
+                                           </td>
+                                           <td className="px-6 py-4 text-sm text-gray-500">{attendance.tipo}</td>
+                                           <td className="px-6 py-4 text-sm text-gray-500">{attendance.motivo}</td>
+                                       </tr>
+                                   ))}
                                 </tbody>
                             </table>
                         </div>
@@ -624,20 +650,17 @@ const Attendance = () => {
                         <div className="flex flex-row justify-center items-center gap-4 mb-6 w-full">
                             <input
                                 type="text"
-                                placeholder="Escribe el correo del empleado..."
+                                placeholder="Escribe el correo del usuario..."
                                 className="w-full sm:w-3/4 lg:w-2/5 max-w-lg rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
+                                value={emailFilter2}
+                                onChange={(e) => setEmailFilter2(e.target.value)}
                             />
-                            <button
+                                 <button
                                 className="bg-blue-600 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-700"
                             >
                                 Buscar
                             </button>
                         </div>
-                    
-                       
-
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                             
                             </div>
@@ -652,210 +675,56 @@ const Attendance = () => {
                                             Fecha
                                         </th>
                                         <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                           Tipo
+                                        </th>
+                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Motivo
                                         </th>
                                         <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Documento de respaldo
                                         </th>
+                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                           Acciones
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
-                                    {filteredAssistants.map((assistant) => (
-                                        <tr key={assistant.email}>
+                                    {absences.map((absence, index) => (
+                                        <tr key={absence._id}>
+                                    
+
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                {assistant.email}
+                                                {absence.abogado_id}
+                                            </td>
+                                            
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                {new Date(absence.fecha).toLocaleDateString()}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {assistant.assist_to}
+                                                {absence.tipo}
+                                            </td>
+
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                {absence.motivo}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+
+
+                                            <button
+                                                    className="text-blue-600 hover:text-black-900"
+                                                    onClick={() => handleEditAbsence(absence)}
+                                                >
+                                                    Editar
+                                                </button>
+                                                <br />
+
                                                 <button
                                                     className="text-red-600 hover:text-red-900"
-                                                    onClick={() => handleDeleteAssistant(assistant.email, assistant.assist_to)}
+                                                    onClick={() => deleteAbsence(absence.abogado_id)}
                                                 >
                                                     Eliminar
                                                 </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </>
-                )}
-                {activeTab === "contratos" && (
-                    <>
-                        <div className="flex flex-row justify-center items-center gap-4 mb-6 w-full">
-                            <input
-                                type="text"
-                                placeholder="Buscar por correo electrónico..."
-                                className="w-full sm:w-3/4 lg:w-2/5 max-w-lg rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                            />
-                            <button
-                                className="bg-blue-600 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-700"
-                            >
-                                Buscar
-                            </button>
-                        </div>
 
-                        <div className="mb-6">
-                            <button
-                                className="bg-blue-600 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-700"
-                                onClick={openContractModal}
-                            >
-                                Crear contrato
-                            </button>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Filtrar por tipo de contrato
-                                </label>
-                                <select
-                                    value={contractTypeFilter}
-                                    onChange={(e) => setContractTypeFilter(e.target.value)}
-                                    className="w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2"
-                                >
-                                    <option value="Todos">Todos los tipos</option>
-                                    {contractTypes.map((type) => (
-                                        <option key={type} value={type}>
-                                            {type}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
-
-                        <div className="overflow-x-auto bg-white shadow rounded-lg max-h-96 overflow-y-auto">
-                            <table className="min-w-full table-fixed divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
-                                    <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Correo</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Salario</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Inicio</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Fin</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fin Prueba</th>
-                                 
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                    {filteredContracts.map((contract, index) => (
-                                        <tr key={contract._id || index}>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                {editingContract === contract.user_email ? (
-                                                    <Select
-                                                        options={userEmails}
-                                                        value={userEmails.find((email) => email.value === tempContractData.user_email)}
-                                                        onChange={(selectedOption) => handleChange("user_email", selectedOption.value)}
-                                                    />
-                                                ) : (
-                                                    contract.user_email
-                                                )}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {editingContract === contract.user_email ? (
-                                                    <select
-                                                        value={tempContractData.type}
-                                                        onChange={(e) => handleChange("type", e.target.value)}
-                                                        className="border border-gray-300 rounded-md p-2 w-full"
-                                                    >
-                                                        {contractTypes.map((type) => (
-                                                            <option key={type} value={type}>{type}</option>
-                                                        ))}
-                                                    </select>
-                                                ) : (
-                                                    contract.type
-                                                )}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {editingContract === contract.user_email ? (
-                                                    <input
-                                                        type="number"
-                                                        value={tempContractData.salary}
-                                                        onChange={(e) => handleChange("salary", e.target.value)}
-                                                        className="border border-gray-300 rounded-md p-2 w-full"
-                                                    />
-                                                ) : (
-                                                    contract.salary
-                                                )}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {editingContract === contract.user_email ? (
-                                                    <input
-                                                        type="date"
-                                                        value={tempContractData.start_date}
-                                                        onChange={(e) => handleChange("start_date", e.target.value)}
-                                                        className="border border-gray-300 rounded-md p-2 w-full"
-                                                    />
-                                                ) : (
-                                                    contract.start_date
-                                                )}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {editingContract === contract.user_email ? (
-                                                    <input
-                                                        type="date"
-                                                        value={tempContractData.end_date}
-                                                        onChange={(e) => handleChange("end_date", e.target.value)}
-                                                        className="border border-gray-300 rounded-md p-2 w-full"
-                                                    />
-                                                ) : (
-                                                    contract.end_date
-                                                )}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {editingContract === contract.user_email ? (
-                                                    <input
-                                                        type="date"
-                                                        value={tempContractData.probation_end_date}
-                                                        onChange={(e) => handleChange("probation_end_date", e.target.value)}
-                                                        className="border border-gray-300 rounded-md p-2 w-full"
-                                                    />
-                                                ) : (
-                                                    contract.probation_end_date
-                                                )}
-                                            </td>
-                                            
-                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                {editingContract === contract.user_email ? (
-                                                    <>
-                                                        <button
-                                                            onClick={d}
-                                                            className="text-blue-600 hover:text-blue-900 mr-4"
-                                                        >
-                                                            Guardar
-                                                        </button>
-                                                        <button
-                                                            onClick={() => {
-                                                                setEditingContract(null);
-                                                                setTempContractData({});
-                                                            }}
-                                                            className="text-red-600 hover:text-red-900"
-                                                        >
-                                                            Cancelar
-                                                        </button>
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <button
-                                                            onClick={() => handleEditContract(contract)}
-                                                            className="text-blue-600 hover:text-blue-900 mr-4"
-                                                        >
-                                                           Ver Asistencias
-                                                        </button>
-                                                        <button
-                                                            className="text-red-600 hover:text-red-900"
-                                                            onClick={() => handleDeleteContract(contract.user_email)}
-                                                        >
-                                                           Ver Ausencias
-                                                        </button>
-                                                    </>
-                                                )}
                                             </td>
                                         </tr>
                                     ))}
@@ -867,10 +736,35 @@ const Attendance = () => {
             </div>
 
             {/* Modal para crear usuario */}
-            {isModalOpen && <InsertAttendanceModal closeModal={closeUserModal} attendanceData={{ email: selectedUserEmail }} />}
-            {isModalAbsenceOpen && <InsertAbsenceModal closeModal={closeAbsenceModal} attendanceData={{ email: selectedUserEmail }} />}
+            {isModalOpen && (
+            <InsertAttendanceModal 
+            closeModal={() => {
+                closeUserModal();
+                fetchAttendances();
+            }} 
+            attendanceData={{ email: selectedUserEmail }} />)}
+
+            {isModalAbsenceOpen &&( 
+                <InsertAbsenceModal 
+                closeModal={() =>{
+                    closeAbsenceModal();
+                    fetchAbsences();
+                }}
+            attendanceData={{ email: selectedUserEmail }} />)}
             {isModalReportOpen && <ShowReport closeModal={closeReportModal} attendanceData={{ email: selectedUserEmail }} />}
-            
+
+
+            {isEditingAbsence && (
+            <UpdateAbsence
+            closeModal={closeEditAbsenceModal}
+            attendanceData={{ email: selectedAbsence.abogado_id }}
+            isEditing={true}
+            absenceToEdit={selectedAbsence}
+            />
+        )}
+      
+      
+      
         </div>
     );
 };
