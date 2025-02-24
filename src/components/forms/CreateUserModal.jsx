@@ -45,8 +45,8 @@ const CreateUserModal = ({ closeModal, addUser }) => {
                 email,
                 phone_number: phoneNumber,
                 profession,
-                superior: superior || null, // Campo opcional
-                team: team || null, // Campo opcional
+                superior: superior || undefined, // Campo opcional
+                team: team || undefined, // Campo opcional
             },
             userEmail: "admin@admin.com" // Aquí deberías poner el email del usuario que está realizando la acción
         };
