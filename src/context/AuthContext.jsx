@@ -1,92 +1,127 @@
 import React, { createContext, useState, useEffect } from "react";
-import axios from "axios";
-import Cookies from "universal-cookie";
-
-const cookies = new Cookies(); 
+import Cookies from "js-cookie";
+import { useNavigate } from "react-router-dom"; // Importar useNavigate para redirecciones
 
 // Crear el contexto
 export const AuthContext = createContext();
 
 // Crear el proveedor
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null); 
-    const [roles, setRoles] = useState([]);
-    const [loading, setLoading] = useState(true); 
-    const [isAuthenticated, setIsAuthenticated] = useState(false); 
+    const [user, setUser] = useState(null); // Estado para los datos del usuario
+    const [loading, setLoading] = useState(true); // Estado para manejar la carga
+    const [isAuthenticated, setIsAuthenticated] = useState(false); // Estado para la autenticación
+    const [isCheckingAuth, setIsCheckingAuth] = useState(true); // Estado para verificar la autenticación antes de renderizar
+    const navigate = useNavigate(); // Hook para redirecciones
 
-    // Configurar Axios para incluir el JWT automáticamente
-    const token = cookies.get("authToken"); 
-    if (token) {
-        axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    }
+    // Obtener el token y el email de las cookies
+    const token = Cookies.get("token");
+    const email = Cookies.get("email");
 
-    // Método para autenticar al usuario
-    const login = async (credentials) => {
+    // Método para obtener los datos del usuario desde el API Gateway
+    const fetchUserData = async () => {
         try {
-            const response = await axios.post("/api/auth/login", credentials);
-            const { user, roles, token } = response.data;
+            const response = await fetch(`${import.meta.env.VITE_AG_URL}/`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    query: `
+                        mutation GetUserPersonalManager($email: String!, $userAuth: UserAuth!) {
+                            getUserPersonalManager(email: $email, userAuth: $userAuth)
+                        }
+                    `,
+                    variables: {
+                        email: email,
+                        userAuth: {
+                            email: "admin@admin.com",
+                            token: token,
+                        },
+                    },
+                }),
+            });
 
-            cookies.set("authToken", token, { path: "/", sameSite: "strict" });
+            const result = await response.json();
+            // console.log("Datos del usuario en AuthContext:", result);
 
-            setUser(user);
-            setRoles(roles);
-            setIsAuthenticated(true);
+            if (result.errors) {
+                throw new Error(result.errors[0].message);
+            }
 
-            axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-            } catch (error) {
-            console.error("Error al iniciar sesión:", error);
-            logout();
-        }
-    };
-
-    // Método para desautenticar al usuario
-    const logout = () => {
-        try {
-            cookies.remove("authToken", { path: "/" });
-            setUser(null);
-            setRoles([]);
-            setIsAuthenticated(false);
-            delete axios.defaults.headers.common["Authorization"];
-        } catch (error) {
-            console.error("Error al cerrar sesión:", error);
-        }
-    };
-
-    // Verificar el estado de autenticación al cargar la aplicación
-    const verifyAuth = async () => {
-        try {
-            if (!token) throw new Error("No token found");
-
-            const response = await axios.get("/api/auth/verify");
-            const { user, roles } = response.data;
-
-            setUser(user);
-            setRoles(roles);
+            const userData = result.data.getUserPersonalManager.response;
+            setUser({
+                name: userData.name,
+                last_name: userData.last_name,
+                email: userData.email,
+                role: userData.role,
+            });
             setIsAuthenticated(true);
         } catch (error) {
-            console.error("Usuario no autenticado o token inválido:", error);
+            console.error("Error al obtener los datos del usuario:", error);
             logout();
         } finally {
             setLoading(false);
+            setIsCheckingAuth(false); // Finalizar la verificación de autenticación
         }
     };
 
+    // Método para iniciar sesión
+    const login = async (email, token) => {
+        Cookies.set("token", token, { path: "/" });
+        Cookies.set("email", email, { path: "/" });
+        await fetchUserData(); // Actualizar los datos del usuario después de iniciar sesión
+    };
+
+    // Método para cerrar sesión
+    const logout = () => {
+        Cookies.remove("token");
+        Cookies.remove("email");
+        Cookies.remove("role");
+        setUser(null);
+        setIsAuthenticated(false);
+        navigate("/"); // Redirigir al usuario a la página de inicio después de cerrar sesión
+    };
+
+    // Verificar la autenticación al cargar la aplicación
     useEffect(() => {
-        verifyAuth();
-    }, []);
+        if (token && email) {
+            fetchUserData();
+        } else {
+            setLoading(false);
+            setIsCheckingAuth(false); // Finalizar la verificación de autenticación
+        }
+    }, [token, email]);
+
+    // Redirigir al usuario si intenta acceder a una ruta protegida sin estar autenticado
+    useEffect(() => {
+        const currentPath = window.location.pathname;
+
+        // Rutas que no requieren autenticación
+        const publicRoutes = ["/", "/login", "/change-password", "/dashboard"]; // Agregar /dashboard
+
+        if (!isCheckingAuth && !isAuthenticated && !publicRoutes.includes(currentPath)) {
+            navigate("/"); // Redirigir al usuario a la página de inicio si no está autenticado y no está en una ruta pública
+        }
+    }, [isCheckingAuth, isAuthenticated, navigate]);
+
+    // Rueda de carga con estilos personalizados
+    const LoadingSpinner = () => (
+        <div className="flex justify-center items-center min-h-screen">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+    );
 
     return (
         <AuthContext.Provider
             value={{
                 user,
-                roles,
                 isAuthenticated,
                 loading,
                 login,
                 logout,
             }}
         >
-        {loading ? <p>Cargando...</p> : children}
+            {isCheckingAuth || loading ? <LoadingSpinner /> : children}
         </AuthContext.Provider>
     );
-    };
+};

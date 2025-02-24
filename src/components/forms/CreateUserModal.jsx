@@ -16,7 +16,7 @@ const CreateUserModal = ({ closeModal, addUser }) => {
     const [teams, setTeams] = useState([]);
 
     useEffect(() => {
-        axios.get('http://localhost:8001/get-users')
+        axios.get(`${import.meta.env.VITE_PM_URL}/get-users`)
             .then(response => {
                 const managers = response.data.filter(user => user.role === 'gerente');
                 setSuperiors(managers);
@@ -25,7 +25,7 @@ const CreateUserModal = ({ closeModal, addUser }) => {
                 console.error('Error fetching users:', error);
             });
 
-        axios.get('http://localhost:8001/get-teams')
+        axios.get(`${import.meta.env.VITE_PM_URL}/get-teams`)
             .then(response => {
                 setTeams(response.data);
             })
@@ -34,44 +34,65 @@ const CreateUserModal = ({ closeModal, addUser }) => {
             });
     }, []);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        const user = {
-            name,
-            last_name: lastName,
-            email,
-            phone_number: phoneNumber,
-            profession,
+
+        // Estructura los datos para enviar al API Gateway
+        const dataToSend = {
+            data: {
+                name,
+                last_name: lastName,
+                email,
+                phone_number: phoneNumber,
+                profession,
+                superior: superior || null, // Campo opcional
+                team: team || null, // Campo opcional
+            },
+            userEmail: "admin@admin.com" // Aquí deberías poner el email del usuario que está realizando la acción
         };
 
-        if (superior !== "") {
-            user.superior = superior;
-        }
-
-        if (team !== "") {
-            user.team = team;
-        }
-
-        axios.post('http://localhost:8001/create-user', user)
-            .then(response => {
-                Swal.fire({
-                    title: 'Usuario creado',
-                    text: 'El usuario ha sido creado exitosamente',
-                    icon: 'success',
-                    confirmButtonText: 'OK'
-                });
-                addUser(response.data);
-                closeModal();
-            })
-            .catch(error => {
-                console.error('Error creating user:', error);
-                Swal.fire({
-                    title: 'Error',
-                    text: 'Hubo un problema al crear el usuario',
-                    icon: 'error',
-                    confirmButtonText: 'OK'
-                });
+        try {
+            // Realiza la solicitud POST al API Gateway
+            const response = await axios.post(`${import.meta.env.VITE_AG_URL}/graphql`, {
+                query: `
+                    mutation CreateUser($data: JSON!, $userEmail: String!) {
+                        createUser(data: $data, userEmail: $userEmail)
+                    }
+                `,
+                variables: dataToSend
+            }, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
             });
+
+            // Verifica si la respuesta fue exitosa
+            if (response.data.errors) {
+                throw new Error(response.data.errors[0].message);
+            }
+
+            // Si todo está bien, cierra el modal y muestra un mensaje de éxito
+            Swal.fire({
+                title: 'Usuario creado',
+                text: 'El usuario ha sido creado exitosamente',
+                icon: 'success',
+                confirmButtonText: 'OK'
+            });
+
+            // Llama a la función addUser para actualizar la lista de empleados en el componente padre
+            addUser(dataToSend.data);
+
+            // Cierra el modal
+            closeModal();
+        } catch (error) {
+            console.error('Error creating user:', error);
+            Swal.fire({
+                title: 'Error',
+                text: 'Hubo un problema al crear el usuario',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+        }
     };
 
     const superiorOptions = superiors.map(superior => ({

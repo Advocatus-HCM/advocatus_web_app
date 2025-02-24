@@ -70,7 +70,7 @@ const EmployeeManagement = () => {
 
     const fetchUsers = async () => {
         try {
-            const response = await axios.get("http://localhost:8001/get-users");
+            const response = await axios.get(`${import.meta.env.VITE_PM_URL}/get-users`);
             const allUsers = Array.isArray(response.data) ? response.data : [];
             setEmployees(allUsers);
             setManagers(allUsers.filter(user => user.role === "gerente"));
@@ -82,8 +82,8 @@ const EmployeeManagement = () => {
 
     const fetchUserEmails = async () => {
         try {
-            const response = await axios.get("http://localhost:8001/get-users");
-            const emails = response.data.map((user) => ({ label: user.email, value: user.email }));
+            const response = await axios.get(`${import.meta.env.VITE_PM_URL}/get-users`);
+            const emails = Array.isArray(response.data) ? response.data.map((user) => ({ label: user.email, value: user.email })) : [];
             setUserEmails(emails);
         } catch (error) {
             console.error("Error fetching user emails:", error);
@@ -92,7 +92,7 @@ const EmployeeManagement = () => {
 
     const fetchContractTypes = async () => {
         try {
-            const response = await axios.get("http://localhost:8001/get-types");
+            const response = await axios.get(`${import.meta.env.VITE_PM_URL}/get-types`);
             setContractTypes(response.data);
         } catch (error) {
             console.error("Error fetching contract types:", error);
@@ -101,7 +101,7 @@ const EmployeeManagement = () => {
 
     const fetchTeams = async () => {
         try {
-            const response = await axios.get("http://localhost:8001/get-teams");
+            const response = await axios.get(`${import.meta.env.VITE_PM_URL}/get-teams`);
             setTeams(Array.isArray(response.data) ? response.data : []);
         } catch (error) {
             console.error("Error fetching teams:", error);
@@ -110,7 +110,7 @@ const EmployeeManagement = () => {
 
     const fetchRoles = async () => {
         try {
-            const response = await axios.get("http://localhost:8001/get-roles");
+            const response = await axios.get(`${import.meta.env.VITE_PM_URL}/get-roles`);
             setRoles(Array.isArray(response.data) ? response.data : []);
         } catch (error) {
             console.error("Error fetching roles:", error);
@@ -119,7 +119,7 @@ const EmployeeManagement = () => {
 
     const fetchProfessions = async () => {
         try {
-            const response = await axios.get("http://localhost:8001/get-professions");
+            const response = await axios.get(`${import.meta.env.VITE_PM_URL}/get-professions`);
             setProfessions(Array.isArray(response.data) ? response.data : []);
         } catch (error) {
             console.error("Error fetching professions:", error);
@@ -128,7 +128,7 @@ const EmployeeManagement = () => {
 
     const fetchAssistants = async () => {
         try {
-            const response = await axios.get('http://localhost:8001/get-all-assistants');
+            const response = await axios.get(`${import.meta.env.VITE_PM_URL}/get-all-assistants`);
             setAssistants(Array.isArray(response.data.assistants) ? response.data.assistants : []);
         } catch (error) {
             console.error('Error fetching assistants:', error.message);
@@ -138,7 +138,7 @@ const EmployeeManagement = () => {
 
     const fetchContracts = async () => {
         try {
-            const response = await axios.get("http://localhost:8001/get-contracts");
+            const response = await axios.get(`${import.meta.env.VITE_PM_URL}/get-contracts`);
             setContracts(Array.isArray(response.data) ? response.data : []);
         } catch (error) {
             console.error("Error fetching contracts:", error);
@@ -151,7 +151,7 @@ const EmployeeManagement = () => {
             if (dataToSend.team === "") {
                 delete dataToSend.team;
             }
-            await axios.patch(`http://localhost:8001/update-user/${email}`, dataToSend);
+            await axios.patch(`${import.meta.env.VITE_PM_URL}/update-user/${email}`, dataToSend);
             setEmployees((prev) =>
                 prev.map((employee) =>
                     employee.email === email ? { ...employee, ...tempEmployeeData } : employee
@@ -201,7 +201,7 @@ const EmployeeManagement = () => {
             }, {});
 
             if (Object.keys(dataToSend).length > 0) {
-                await axios.patch(`http://localhost:8001/update-contract/${contractEmail}`, dataToSend);
+                await axios.patch(`${import.meta.env.VITE_PM_URL}/update-contract/${contractEmail}`, dataToSend);
                 setContracts((prev) =>
                     prev.map((contract) =>
                         contract.user_email === contractEmail ? { ...contract, ...dataToSend } : contract
@@ -229,7 +229,7 @@ const EmployeeManagement = () => {
             if (dataToSend.scope === "") {
                 delete dataToSend.scope;
             }
-            await axios.patch(`http://localhost:8001/update-team/${teamName}`, dataToSend);
+            await axios.patch(`${import.meta.env.VITE_PM_URL}/update-team/${teamName}`, dataToSend);
             setTeams((prev) =>
                 prev.map((team) =>
                     team.name === teamName ? { ...team, ...tempTeamData } : team
@@ -294,7 +294,7 @@ const EmployeeManagement = () => {
     
         if (result.isConfirmed) {
             try {
-                await axios.delete(`http://localhost:8001/delete-user/${userEmail}`);
+                await axios.delete(`${import.meta.env.VITE_PM_URL}/delete-user/${userEmail}`);
                 setEmployees((prev) => prev.filter((employee) => employee.email !== userEmail));
                 Swal.fire("Eliminado!", "El usuario ha sido eliminado.", "success");
             } catch (error) {
@@ -318,7 +318,7 @@ const EmployeeManagement = () => {
     
         if (result.isConfirmed) {
             try {
-                await axios.delete('http://localhost:8001/remove-assistant', {
+                await axios.delete(`${import.meta.env.VITE_PM_URL}/remove-assistant`, {
                     data: {
                         assistant_email: assistantEmail,
                         user_email: userEmail
@@ -347,7 +347,7 @@ const EmployeeManagement = () => {
     
         if (result.isConfirmed) {
             try {
-                await axios.delete(`http://localhost:8001/delete-team/${teamName}`);
+                await axios.delete(`${import.meta.env.VITE_PM_URL}/delete-team/${teamName}`);
                 setTeams((prev) => prev.filter((team) => team.name !== teamName));
                 Swal.fire("Eliminado!", "El equipo ha sido eliminado.", "success");
             } catch (error) {
@@ -371,7 +371,7 @@ const EmployeeManagement = () => {
 
         if (result.isConfirmed) {
             try {
-                await axios.delete(`http://localhost:8001/delete-contract/${contractEmail}`);
+                await axios.delete(`${import.meta.env.VITE_PM_URL}/delete-contract/${contractEmail}`);
                 setContracts((prev) => prev.filter((contract) => contract.user_email !== contractEmail));
                 Swal.fire("Eliminado!", "El contrato ha sido eliminado.", "success");
             } catch (error) {
@@ -1019,7 +1019,7 @@ const EmployeeManagement = () => {
                                     className="w-full rounded-lg border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm p-2"
                                 >
                                     <option value="Todos">Todos los tipos</option>
-                                    {contractTypes.map((type) => (
+                                    {Array.isArray(contractTypes) && contractTypes.map((type) => (
                                         <option key={type} value={type}>
                                             {type}
                                         </option>

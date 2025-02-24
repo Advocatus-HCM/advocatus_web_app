@@ -11,7 +11,7 @@ const CreateAssistantModal = ({ closeModal, refreshAssistants }) => {
     const [users, setUsers] = useState([]);
 
     useEffect(() => {
-        axios.get('http://localhost:8001/get-users')
+        axios.get(`${import.meta.env.VITE_PM_URL}/get-users`)
             .then(response => {
                 const allUsers = response.data;
                 setAssistants(allUsers.filter(user => user.role === 'asistente'));
@@ -30,7 +30,7 @@ const CreateAssistantModal = ({ closeModal, refreshAssistants }) => {
             user_email: user
         };
 
-        axios.post('http://localhost:8001/add-assistant', payload)
+        axios.post(`${import.meta.env.VITE_PM_URL}/add-assistant`, payload)
             .then(response => {
                 Swal.fire({
                     title: 'Asistente asignado',

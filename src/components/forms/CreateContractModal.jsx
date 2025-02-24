@@ -19,7 +19,7 @@ const CreateContractModal = ({ closeModal, addContract }) => {
     const [roles, setRoles] = useState([]);
 
     useEffect(() => {
-        axios.get("http://localhost:8001/get-users")
+        axios.get(`${import.meta.env.VITE_PM_URL}/get-users`)
             .then(response => {
                 const inactiveUsers = response.data.filter(user => user.role === "desactivado");
                 setUsers(inactiveUsers);
@@ -28,7 +28,7 @@ const CreateContractModal = ({ closeModal, addContract }) => {
                 console.error("Error fetching users:", error);
             });
 
-        axios.get("http://localhost:8001/get-types")
+        axios.get(`${import.meta.env.VITE_PM_URL}/get-types`)
             .then(response => {
                 setTypes(response.data);
             })
@@ -36,7 +36,7 @@ const CreateContractModal = ({ closeModal, addContract }) => {
                 console.error("Error fetching contract types:", error);
             });
 
-        axios.get("http://localhost:8001/get-roles")
+        axios.get(`${import.meta.env.VITE_PM_URL}/get-roles`)
             .then(response => {
                 setRoles(response.data);
             })
@@ -61,7 +61,7 @@ const CreateContractModal = ({ closeModal, addContract }) => {
             contract.end_date = endDate.toISOString().split("T")[0];
         }
 
-        axios.post("http://localhost:8001/create-contract", contract)
+        axios.post(`${import.meta.env.VITE_PM_URL}/create-contract`, contract)
             .then(response => {
                 Swal.fire({
                     title: "Contrato creado",
