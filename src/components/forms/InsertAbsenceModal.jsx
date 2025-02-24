@@ -43,7 +43,7 @@ const InsertAbsenceModal = ({ closeModal, attendanceData }) => {
 
     try {
       const response = await axios.post(
-        "http://localhost:8003/report-absences",
+        `${import.meta.env.VITE_AT_URL}/report-absences`,
         absenceData,
         {
           headers: {

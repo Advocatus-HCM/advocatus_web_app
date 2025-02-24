@@ -14,7 +14,7 @@ const ShowReport = ({ closeModal, attendanceData }) => {
   const [totalTardanzas, setTotalTardanzas] = useState("");
 
   useEffect(() => {
-    console.log("Contenido de attendanceData:", attendanceData);
+  
     if (attendanceData && attendanceData.email) {
       setAbogadoId(attendanceData.email);
     }
@@ -24,7 +24,7 @@ const ShowReport = ({ closeModal, attendanceData }) => {
     e.preventDefault();
 
     try {
-      const response = await axios.get("http://localhost:8003/get-reports", {
+      const response = await axios.get(`${import.meta.env.VITE_AT_URL}/get-reports`, {
         params: {
           abogado_id: abogadoId,
           fecha_inicio: fecha,

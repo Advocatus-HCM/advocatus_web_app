@@ -221,7 +221,7 @@ const Attendance = () => {
 
 const fetchAttendances = async () => {
     try {
-        const response = await axios.get("http://localhost:8003/get-attendances");
+        const response = await axios.get(`${import.meta.env.VITE_AT_URL}/get-attendances`);
         let allAttendances = Array.isArray(response.data) ? response.data : [];
 
         if (emailFilter) {
@@ -238,7 +238,7 @@ const fetchAttendances = async () => {
 
 const fetchAbsences = async () => {
     try {
-        const response = await axios.get("http://localhost:8003/get-absences");
+        const response = await axios.get(`${import.meta.env.VITE_AT_URL}/get-absences`);
         let allAbsences = Array.isArray(response.data) ? response.data : [];
 
         if (emailFilter2) {
@@ -274,7 +274,7 @@ const deleteAbsence = async (abogadoId) => {
             return;
         }
 
-        const response = await axios.delete("http://localhost:8003/delete-absence", {
+        const response = await axios.delete(`${import.meta.env.VITE_AT_URL}/delete-absence`, {
             data: { abogado_id: abogadoId }
         });
 

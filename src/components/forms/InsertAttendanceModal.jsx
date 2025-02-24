@@ -18,9 +18,9 @@ const InsertAttendanceModal = ({ closeModal,attendanceData }) => {
   const [abogados, setAbogados] = useState([]);
 
   useEffect(() => {
-      console.log("Contenido de attendanceData:", attendanceData);
+     
       if (attendanceData && attendanceData.email) {
-        setAbogadoId(attendanceData.email); // Ajusta según la estructura de attendanceData
+        setAbogadoId(attendanceData.email);
       }
     }, [attendanceData]);
     
@@ -58,7 +58,7 @@ const InsertAttendanceModal = ({ closeModal,attendanceData }) => {
         motivo,
       };
   
-      const response = await axios.post("http://localhost:8003/insertattendance", attendanceData, {
+      const response = await axios.post(`${import.meta.env.VITE_AT_URL}/insertattendance`, attendanceData, {
         headers: {
           Authorization: `Bearer ${myToken}`,
           "Content-Type": "application/json",

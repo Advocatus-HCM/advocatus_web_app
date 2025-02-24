@@ -14,7 +14,7 @@ const UpdateAbsence = ({ closeModal, attendanceData, isEditing = false, absenceT
   const [documentoRespaldo, setDocumentoRespaldo] = useState("");
 
 
-  console.log("fds",absenceToEdit)
+
 
   useEffect(() => {
     if (isEditing && absenceToEdit) {
@@ -57,7 +57,7 @@ const UpdateAbsence = ({ closeModal, attendanceData, isEditing = false, absenceT
       if (isEditing) {
      
         response = await axios.put(
-          `http://localhost:8003/update-absence/${abogadoId}`,
+          `${import.meta.env.VITE_AT_URL}/update-absence/${abogadoId}`,
           absenceData,
           {
             headers: {
@@ -75,7 +75,7 @@ const UpdateAbsence = ({ closeModal, attendanceData, isEditing = false, absenceT
       } else {
 
         response = await axios.post(
-          "http://localhost:8003/report-absences",
+          `${import.meta.env.VITE_AT_URL}/report-absences`,
           absenceData,
           {
             headers: {
