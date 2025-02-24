@@ -13,8 +13,6 @@ const CreateCaseModal = ({ closeModal, involvedPersonnel,setInvolvedPersonnel })
     const [subtype, setSubtype] = useState("");
     const [status, setStatus] = useState("in_process");
     const [archived, setArchived] = useState("False");
-    const [involvedPersonnel, setInvolvedPersonnel] = useState([]);
-
 
     
     const queryGet= `

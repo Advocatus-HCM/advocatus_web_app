@@ -15,7 +15,7 @@ const UpdateCaseModal = ({ closeModal, caseData }) => {
     const [subtype, setSubtype] = useState(caseData.subtype || "");
     const [status, setStatus] = useState(caseData.status || "in_process");
     const [archived, setArchived] = useState(caseData.archived || "False");
-    const [involvedPersonnel, setInvolvedPersonnel] = useState([]);
+
     const [selectedPersonnel, setSelectedPersonnel] = useState([]);
 
     const queryGet = `
