@@ -112,7 +112,7 @@ const Cases = () => {
     const fetchUsers = async () => {
         try {
             const response = await axios.post(
-                "http://localhost:4000/", 
+                `${VITE_AG_URL}`,
                 {
                     query: queryGet, 
                     variables: {

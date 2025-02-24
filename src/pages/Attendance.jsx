@@ -58,7 +58,7 @@ const Attendance = () => {
 
     const fetchUsers = async () => {
         try {
-            const response = await axios.get("http://localhost:8001/get-users");
+            const response = await axios.get(`${import.meta.env.VITE_PM_URL}/get-users`);
             const allUsers = Array.isArray(response.data) ? response.data : [];
             setEmployees(allUsers);
             setManagers(allUsers.filter(user => user.role === "gerente"));
@@ -69,7 +69,7 @@ const Attendance = () => {
 
     const fetchUserEmails = async () => {
         try {
-            const response = await axios.get("http://localhost:8001/get-users");
+            const response = await axios.get(`${import.meta.env.VITE_PM_URL}/get-users`);
             const emails = response.data.map((user) => ({ label: user.email, value: user.email }));
             setUserEmails(emails);
         } catch (error) {
@@ -79,7 +79,7 @@ const Attendance = () => {
 
     const fetchContractTypes = async () => {
         try {
-            const response = await axios.get("http://localhost:8001/get-types");
+            const response = await axios.get(`${import.meta.env.VITE_PM_URL}/get-types`);
             setContractTypes(response.data);
         } catch (error) {
             console.error("Error fetching contract types:", error);
@@ -88,7 +88,7 @@ const Attendance = () => {
 
     const fetchTeams = async () => {
         try {
-            const response = await axios.get("http://localhost:8001/get-teams");
+            const response = await axios.get(`${import.meta.env.VITE_PM_URL}/get-teams`);
             setTeams(Array.isArray(response.data) ? response.data : []);
         } catch (error) {
             console.error("Error fetching teams:", error);
@@ -97,7 +97,7 @@ const Attendance = () => {
 
     const fetchProfessions = async () => {
         try {
-            const response = await axios.get("http://localhost:8001/get-professions");
+            const response = await axios.get(`${import.meta.env.VITE_PM_URL}/get-professions`);
             setProfessions(Array.isArray(response.data) ? response.data : []);
         } catch (error) {
             console.error("Error fetching professions:", error);
@@ -110,7 +110,7 @@ const Attendance = () => {
             if (dataToSend.team === "") {
                 delete dataToSend.team;
             }
-            await axios.patch(`http://localhost:8001/update-user/${email}`, dataToSend);
+            await axios.patch(`${import.meta.env.VITE_PM_URL}/update-user/${email}`, dataToSend);
             setEmployees((prev) =>
                 prev.map((employee) =>
                     employee.email === email ? { ...employee, ...tempEmployeeData } : employee
@@ -287,7 +287,6 @@ const deleteAbsence = async (abogadoId) => {
 };
 
 
-
 const [selectedAbsence, setSelectedAbsence] = useState(null);
 const [isEditingAbsence, setIsEditingAbsence] = useState(false);
 
@@ -303,8 +302,6 @@ const closeEditAbsenceModal = () => {
     setSelectedAbsence(null);
     fetchAbsences();
 };
-
-
     
     return (
         <div className="flex min-h-screen">
