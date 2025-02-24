@@ -15,7 +15,6 @@ const CreateCaseModal = ({ closeModal, addUser }) => {
     const [type, setType] = useState("");
     const [subtype, setSubtype] = useState("");
     const [status, setStatus] = useState("in_process");
-    const [archived, setArchived] = useState("False");
     const [involvedPersonnel, setInvolvedPersonnel] = useState([]);
 
 
@@ -73,11 +72,9 @@ const handleSubmit = async (e) => {
         data: {
             name,
             description,
-            start_date: "2024-01-30", 
             type,
             subtype,
             status,
-            archived,
             involved_personnel: involvedPersonnel,
            
         },
