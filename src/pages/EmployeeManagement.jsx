@@ -7,6 +7,7 @@ import CreateUserModal from "../components/forms/CreateUserModal";
 import CreateTeamModal from "../components/forms/CreateTeamModal";
 import CreateAssistantModal from "../components/forms/CreateAssistantModal";
 import CreateContractModal from "../components/forms/CreateContractModal";
+import Cookies from 'js-cookie';
 
 const EmployeeManagement = () => {
     const [teamFilter, setTeamFilter] = useState("Todos");
@@ -35,6 +36,7 @@ const EmployeeManagement = () => {
     const [userEmails, setUserEmails] = useState([]);
     const [editingContract, setEditingContract] = useState(null);
     const [managers, setManagers] = useState([]);
+    const token = Cookies.get('token');
 
 
     useEffect(() => {
@@ -55,6 +57,7 @@ const EmployeeManagement = () => {
         setRoleFilter("Todos"); 
         setProfessionFilter("Todos"); 
     };
+    
 
     const addTeam = (team) => {
         setTeams((prev) => [...prev, team]);
@@ -70,8 +73,37 @@ const EmployeeManagement = () => {
 
     const fetchUsers = async () => {
         try {
-            const response = await axios.get(`${import.meta.env.VITE_PM_URL}/get-users`);
-            const allUsers = Array.isArray(response.data) ? response.data : [];
+            const token = Cookies.get('token'); 
+            const email = Cookies.get('email'); 
+    
+            const response = await axios.post(
+                `${import.meta.env.VITE_AG_URL}`, 
+                {
+                    query: `
+                        mutation GetAllUsersPersonalManager($userAuth: UserAuth!) {
+                            getAllUsersPersonalManager(userAuth: $userAuth)
+                        }
+                    `,
+                    variables: {
+                        userAuth: {
+                            email: email, 
+                            token: token 
+                        }
+                    }
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+    
+            console.log("API Response:", response.data); 
+    
+            const allUsers = Array.isArray(response.data.data.getAllUsersPersonalManager.response) 
+                ? response.data.data.getAllUsersPersonalManager.response 
+                : [];
+    
             setEmployees(allUsers);
             setManagers(allUsers.filter(user => user.role === "gerente"));
         } catch (error) {
@@ -80,7 +112,7 @@ const EmployeeManagement = () => {
     };
     
 
-    const fetchUserEmails = async () => {
+    const fetchUserEmails = async () => { // Nicolas
         try {
             const response = await axios.get(`${import.meta.env.VITE_PM_URL}/get-users`);
             const emails = Array.isArray(response.data) ? response.data.map((user) => ({ label: user.email, value: user.email })) : [];
@@ -90,7 +122,7 @@ const EmployeeManagement = () => {
         }
     };
 
-    const fetchContractTypes = async () => {
+    const fetchContractTypes = async () => { // Nicolas
         try {
             const response = await axios.get(`${import.meta.env.VITE_PM_URL}/get-types`);
             setContractTypes(response.data);
@@ -99,7 +131,7 @@ const EmployeeManagement = () => {
         }
     };
 
-    const fetchTeams = async () => {
+    const fetchTeams = async () => { // Nicolas
         try {
             const response = await axios.get(`${import.meta.env.VITE_PM_URL}/get-teams`);
             setTeams(Array.isArray(response.data) ? response.data : []);
@@ -108,7 +140,7 @@ const EmployeeManagement = () => {
         }
     };
 
-    const fetchRoles = async () => {
+    const fetchRoles = async () => { // Nicolas
         try {
             const response = await axios.get(`${import.meta.env.VITE_PM_URL}/get-roles`);
             setRoles(Array.isArray(response.data) ? response.data : []);
@@ -117,7 +149,7 @@ const EmployeeManagement = () => {
         }
     };
 
-    const fetchProfessions = async () => {
+    const fetchProfessions = async () => { // Nicolas
         try {
             const response = await axios.get(`${import.meta.env.VITE_PM_URL}/get-professions`);
             setProfessions(Array.isArray(response.data) ? response.data : []);
@@ -126,7 +158,7 @@ const EmployeeManagement = () => {
         }
     };
 
-    const fetchAssistants = async () => {
+    const fetchAssistants = async () => { // Nicolas
         try {
             const response = await axios.get(`${import.meta.env.VITE_PM_URL}/get-all-assistants`);
             setAssistants(Array.isArray(response.data.assistants) ? response.data.assistants : []);
@@ -136,7 +168,7 @@ const EmployeeManagement = () => {
         }
     };
 
-    const fetchContracts = async () => {
+    const fetchContracts = async () => { // Nicolas
         try {
             const response = await axios.get(`${import.meta.env.VITE_PM_URL}/get-contracts`);
             setContracts(Array.isArray(response.data) ? response.data : []);
@@ -145,7 +177,7 @@ const EmployeeManagement = () => {
         }
     };
 
-    const handleSave = async (email) => {
+    const handleSave = async (email) => { // Gabriel
         try {
             const dataToSend = { ...tempEmployeeData };
             if (dataToSend.team === "") {
@@ -191,7 +223,7 @@ const EmployeeManagement = () => {
         setTempContractData({ ...contract });
     };
 
-    const handleSaveContract = async (contractEmail) => {
+    const handleSaveContract = async (contractEmail) => { // Gabriel
         try {
             const dataToSend = Object.keys(tempContractData).reduce((acc, key) => {
                 if (tempContractData[key] !== contracts.find((c) => c.user_email === contractEmail)[key]) {
@@ -217,7 +249,7 @@ const EmployeeManagement = () => {
         }
     };
 
-    const handleSaveTeam = async (teamName) => {
+    const handleSaveTeam = async (teamName) => { // Gabriel
         try {
             const dataToSend = { ...tempTeamData };
             if (dataToSend.name === "") {
@@ -280,7 +312,7 @@ const EmployeeManagement = () => {
         fetchContracts();
     };
 
-    const handleDeleteUser = async (userEmail) => {
+    const handleDeleteUser = async (userEmail) => { // Gabriel
         const result = await Swal.fire({
             title: '¿Estás seguro?',
             text: "No podrás revertir esto",
@@ -304,7 +336,7 @@ const EmployeeManagement = () => {
         }
     };
 
-    const handleDeleteAssistant = async (assistantEmail, userEmail) => {
+    const handleDeleteAssistant = async (assistantEmail, userEmail) => { // Gabriel
         const result = await Swal.fire({
             title: '¿Estás seguro?',
             text: "No podrás revertir esto",
@@ -333,7 +365,7 @@ const EmployeeManagement = () => {
         }
     };
 
-    const handleDeleteTeam = async (teamName) => {
+    const handleDeleteTeam = async (teamName) => { // Gabriel
         const result = await Swal.fire({
             title: '¿Estás seguro?',
             text: "No podrás revertir esto",
@@ -357,7 +389,7 @@ const EmployeeManagement = () => {
         }
     };
 
-    const handleDeleteContract = async (contractEmail) => {
+    const handleDeleteContract = async (contractEmail) => { // Gabriel
         const result = await Swal.fire({
             title: '¿Estás seguro?',
             text: "No podrás revertir esto",
