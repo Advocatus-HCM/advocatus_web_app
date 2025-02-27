@@ -111,69 +111,277 @@ const EmployeeManagement = () => {
         }
     };
     
-
-    const fetchUserEmails = async () => { // Nicolas
-        try {
-            const response = await axios.get(`${import.meta.env.VITE_PM_URL}/get-users`);
-            const emails = Array.isArray(response.data) ? response.data.map((user) => ({ label: user.email, value: user.email })) : [];
+    const fetchUserEmails = async () => { //Nicolas
+        const token = Cookies.get('token'); 
+        const email = Cookies.get('email'); 
+        let response = null;
+        try{
+            response = await axios.post(
+                `${import.meta.env.VITE_AG_URL}`, 
+                {
+                    query: `
+                        mutation GetAllUsersPersonalManager($userAuth: UserAuth!) {
+                            getAllUsersPersonalManager(userAuth: $userAuth)
+                        }
+                    `,
+                    variables: {
+                        userAuth: {
+                            email: email, 
+                            token: token 
+                        }
+                    }
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+        }catch(error){
+            console.error("No se pudo realizar la Petición al API Gateway en la obtención de los Usuarios:", error);
+        }
+        const result = response.data;
+        //Verificar Exito o Error
+        if(result!=null && result.data.getAllUsersPersonalManager.success){
+            const emails = Array.isArray(result.data.getAllUsersPersonalManager.response) ? result.data.getAllUsersPersonalManager.response.map((user) => ({ label: user.email, value: user.email })) : [];
             setUserEmails(emails);
-        } catch (error) {
-            console.error("Error fetching user emails:", error);
+        }else{
+            console.error("Error fetching user emails:", result.data.getAllUsersPersonalManager.response);
         }
     };
 
-    const fetchContractTypes = async () => { // Nicolas
-        try {
-            const response = await axios.get(`${import.meta.env.VITE_PM_URL}/get-types`);
-            setContractTypes(response.data);
-        } catch (error) {
-            console.error("Error fetching contract types:", error);
+    const fetchContractTypes = async () => { //Nicolas
+        const token = Cookies.get('token');
+        const email = Cookies.get('email');
+        let response = null;
+        try{
+            response = await axios.post(
+                `${import.meta.env.VITE_AG_URL}`, 
+                {
+                    query: `
+                        mutation GetContractTypes($userAuth: UserAuth!) {
+                            getContractTypes(userAuth: $userAuth)
+                        }
+                    `,
+                    variables: {
+                        userAuth: {
+                            email: email, 
+                            token: token 
+                        }
+                    }
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+        }catch(error){
+            console.error("No se pudo realizar la Petición al API Gateway en la Obtención de los Tipos de Contrato:", error);
+        }
+
+        const result = response.data;
+
+        //Verificar Exito o Error
+        if(result!=null && result.data.getContractTypes.success){
+            setContractTypes(result.data.getContractTypes.response);
+        }else{
+            console.error("Error fetching contract types:", result.data.getContractTypes.response);
         }
     };
 
     const fetchTeams = async () => { // Nicolas
-        try {
-            const response = await axios.get(`${import.meta.env.VITE_PM_URL}/get-teams`);
-            setTeams(Array.isArray(response.data) ? response.data : []);
-        } catch (error) {
-            console.error("Error fetching teams:", error);
+        const token = Cookies.get('token');
+        const email = Cookies.get('email');
+        let response = null;
+        try{
+            response = await axios.post(
+                `${import.meta.env.VITE_AG_URL}`, 
+                {
+                    query: `
+                        mutation GetTeams($userAuth: UserAuth!) {
+                            getTeams(userAuth: $userAuth)
+                        }
+                    `,
+                    variables: {
+                        userAuth: {
+                            email: email, 
+                            token: token 
+                        }
+                    }
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+        }catch(error){
+            console.error("No se pudo realizar la Petición al API Gateway en la obtención de los Equipos:", error);
+        }
+        const result = response.data;
+        //Verificar Exito o Error
+        if(result!=null && result.data.getTeams.success){
+            const teams = Array.isArray(result.data.getTeams.response) ? result.data.getTeams.response : [];
+            setTeams(Array.isArray(result.data.getTeams.response) ? result.data.getTeams.response : []);
+        }else{
+            console.error("Error fetching teams:", result.data.getTeams.response);
         }
     };
 
-    const fetchRoles = async () => { // Nicolas
-        try {
-            const response = await axios.get(`${import.meta.env.VITE_PM_URL}/get-roles`);
-            setRoles(Array.isArray(response.data) ? response.data : []);
-        } catch (error) {
-            console.error("Error fetching roles:", error);
+    const fetchRoles = async () =>{ //Nicolas
+        const token = Cookies.get('token');
+        const email = Cookies.get('email');
+        let response = null;
+        try{
+            response = await axios.post(
+                `${import.meta.env.VITE_AG_URL}`, 
+                {
+                    query: `
+                        mutation GetRoles($userAuth: UserAuth!) {
+                            getRoles(userAuth: $userAuth)
+                        }
+                    `,
+                    variables: {
+                        userAuth: {
+                            email: email, 
+                            token: token 
+                        }
+                    }
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+        }catch(error){
+            console.error("No se pudo realizar la Petición al API Gateway en la obtención de los Roles:", error);
         }
+
+        const result = response.data;
+        if(result!=null && result.data.getRoles.success){
+            setRoles(Array.isArray(result.data.getRoles.response) ? result.data.getRoles.response : []);
+        }else{
+            console.error("Error fetching roles:", result.data.getRoles.response);
+        }
+
     };
 
-    const fetchProfessions = async () => { // Nicolas
-        try {
-            const response = await axios.get(`${import.meta.env.VITE_PM_URL}/get-professions`);
-            setProfessions(Array.isArray(response.data) ? response.data : []);
-        } catch (error) {
-            console.error("Error fetching professions:", error);
+    const fetchProfessions = async () => { //Nicolas
+        const token = Cookies.get('token');
+        const email = Cookies.get('email');
+        let response = null;
+        try{
+            response = await axios.post(
+                `${import.meta.env.VITE_AG_URL}`, 
+                {
+                    query: `
+                        mutation GetProfessions($userAuth: UserAuth!) {
+                            getProfessions(userAuth: $userAuth)
+                        }
+                    `,
+                    variables: {
+                        userAuth: {
+                            email: email, 
+                            token: token 
+                        }
+                    }
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+        }catch(error){
+            console.error("No se pudo realizar la Petición al API Gateway en la obtención de las Profesiones:", error);
+        }
+        
+        const result = response.data;
+        //Verificar Exito o Error
+        if(result!=null && result.data.getProfessions.success){
+            setProfessions(Array.isArray(result.data.getProfessions.response) ? result.data.getProfessions.response : []);
+        }else{
+            console.error("Error fetching professions:", result.data.getProfessions.response);
         }
     };
 
     const fetchAssistants = async () => { // Nicolas
-        try {
-            const response = await axios.get(`${import.meta.env.VITE_PM_URL}/get-all-assistants`);
-            setAssistants(Array.isArray(response.data.assistants) ? response.data.assistants : []);
-        } catch (error) {
-            console.error('Error fetching assistants:', error.message);
-            console.error('Detalles del error completo:', error); 
+        const token = Cookies.get('token');
+        const email = Cookies.get('email');
+        let response = null;
+        try{
+            response = await axios.post(
+                `${import.meta.env.VITE_AG_URL}`, 
+                {
+                    query: `
+                        mutation GetAllAssistants($userAuth: UserAuth!) {
+                            getAllAssistants(userAuth: $userAuth)
+                        }
+                    `,
+                    variables: {
+                        userAuth: {
+                            email: email, 
+                            token: token 
+                        }
+                    }
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+        }catch(error){
+            console.error("No se pudo realizar la Petición al API Gateway en la obtención de los Asistentes:", error);
+        }
+
+        const result = response.data;
+        //Verificar Exito o Error
+        if(result!=null && result.data.getAllAssistants.success){
+            setAssistants(Array.isArray(result.data.getAllAssistants.response) ? result.data.getAllAssistants.response : []);
+        }else{
+            console.error("Error fetching assistants:", result.data.getAllAssistants.response);
         }
     };
 
+
     const fetchContracts = async () => { // Nicolas
-        try {
-            const response = await axios.get(`${import.meta.env.VITE_PM_URL}/get-contracts`);
-            setContracts(Array.isArray(response.data) ? response.data : []);
-        } catch (error) {
-            console.error("Error fetching contracts:", error);
+        const token = Cookies.get('token');
+        const email = Cookies.get('email');
+        let response = null;
+        try{
+            response = await axios.post(
+                `${import.meta.env.VITE_AG_URL}`, 
+                {
+                    query: `
+                        mutation GetAllContracts($userAuth: UserAuth!) {
+                            getAllContracts(userAuth: $userAuth)
+                        }
+                    `,
+                    variables: {
+                        userAuth: {
+                            email: email, 
+                            token: token 
+                        }
+                    }
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+        }catch(error){
+            console.error("No se pudo realizar la Petición al API Gateway en la obtención de los Contratos:", error);
+        }
+        const result = response.data;
+        //Verificar Exito o Error
+        if(result!=null && result.data.getAllContracts.success){
+            setContracts(Array.isArray(result.data.getAllContracts.response) ? result.data.getAllContracts.response : []);
+        }else{
+            console.error("Error fetching contracts:", result.data.getAllContracts.response);
         }
     };
 
