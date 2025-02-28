@@ -3,6 +3,7 @@ import { MdClose } from "react-icons/md";
 import Swal from 'sweetalert2';
 import axios from 'axios';
 import Select from 'react-select';
+import Cookies from 'js-cookie';
 
 const CreateTeamModal = ({ closeModal, addTeam }) => {
     const [name, setName] = useState("");
@@ -11,25 +12,72 @@ const CreateTeamModal = ({ closeModal, addTeam }) => {
     const [leaders, setLeaders] = useState([]);
 
     useEffect(() => {
-        axios.get(`${import.meta.env.VITE_PM_URL}/get-users`)
-            .then(response => {
-                const managers = response.data.filter(user => user.role === 'gerente');
-                setLeaders(managers);
-            })
-            .catch(error => {
-                console.error('Error fetching users:', error);
-            });
+        const email = Cookies.get('email');
+        const token = Cookies.get('token');
+
+        if (!email || !token) {
+            console.error('Email or token is missing in cookies');
+            return;
+        }
+
+        const userAuth = {
+            email: email,
+            token: token
+        };
+
+        axios.post(`${import.meta.env.VITE_AG_URL}`, {
+            query: `
+                mutation GetAllUsersPersonalManager($userAuth: UserAuth!) {
+                    getAllUsersPersonalManager(userAuth: $userAuth)
+                }
+            `,
+            variables: {
+                userAuth: userAuth
+            }
+        })
+        .then(response => {
+            const allUsers = response.data.data.getAllUsersPersonalManager.response;
+            const managers = allUsers.filter(user => user.role === 'gerente');
+            setLeaders(managers);
+        })
+        .catch(error => {
+            console.error('Error fetching users:', error);
+        });
     }, []);
 
     const handleSubmit = (e) => {
         e.preventDefault();
+    
+        const email = Cookies.get('email');
+        const token = Cookies.get('token');
+    
+        if (!email || !token) {
+            console.error('Email or token is missing in cookies');
+            return;
+        }
+    
         const team = {
             name,
             leader,
             scope
         };
-
-        axios.post(`${import.meta.env.VITE_PM_URL}/create-team`, team)
+    
+        const payload = {
+            query: `
+                mutation CreateTeam($team: JSON!, $userAuth: UserAuth!) {
+                    createTeam(team: $team, userAuth: $userAuth)
+                }
+            `,
+            variables: {
+                team: team,
+                userAuth: {
+                    email: email,
+                    token: token
+                }
+            }
+        };
+    
+        axios.post(`${import.meta.env.VITE_AG_URL}`, payload)
             .then(response => {
                 Swal.fire({
                     title: 'Equipo creado',
@@ -37,7 +85,7 @@ const CreateTeamModal = ({ closeModal, addTeam }) => {
                     icon: 'success',
                     confirmButtonText: 'OK'
                 });
-                addTeam(response.data);
+                addTeam(response.data.data.createTeam);
                 closeModal();
             })
             .catch(error => {

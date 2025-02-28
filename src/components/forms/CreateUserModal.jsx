@@ -3,6 +3,7 @@ import { MdClose } from "react-icons/md";
 import Swal from 'sweetalert2';
 import axios from 'axios';
 import Select from 'react-select';
+import Cookies from 'js-cookie';
 
 const CreateUserModal = ({ closeModal, addUser }) => {
     const [name, setName] = useState("");
@@ -16,28 +17,59 @@ const CreateUserModal = ({ closeModal, addUser }) => {
     const [teams, setTeams] = useState([]);
 
     useEffect(() => {
-        axios.get(`${import.meta.env.VITE_PM_URL}/get-users`)
-            .then(response => {
-                const managers = response.data.filter(user => user.role === 'gerente');
-                setSuperiors(managers);
-            })
-            .catch(error => {
-                console.error('Error fetching users:', error);
-            });
+        const email = Cookies.get('email');
+        const token = Cookies.get('token');
 
-        axios.get(`${import.meta.env.VITE_PM_URL}/get-teams`)
-            .then(response => {
-                setTeams(response.data);
-            })
-            .catch(error => {
-                console.error('Error fetching teams:', error);
-            });
+        if (!email || !token) {
+            console.error('Email or token is missing in cookies');
+            return;
+        }
+
+        const userAuth = {
+            email: email,
+            token: token
+        };
+
+        axios.post(`${import.meta.env.VITE_AG_URL}`, {
+            query: `
+                mutation GetAllUsersPersonalManager($userAuth: UserAuth!) {
+                    getAllUsersPersonalManager(userAuth: $userAuth)
+                }
+            `,
+            variables: {
+                userAuth: userAuth
+            }
+        })
+        .then(response => {
+            const allUsers = response.data.data.getAllUsersPersonalManager.response;
+            const managers = allUsers.filter(user => user.role === 'gerente');
+            setSuperiors(managers); 
+        })
+        .catch(error => {
+            console.error('Error fetching users:', error);
+        });
+
+        axios.post(`${import.meta.env.VITE_AG_URL}`, {
+            query: `
+                mutation GetTeams($userAuth: UserAuth!) {
+                    getTeams(userAuth: $userAuth)
+                }
+            `,
+            variables: {
+                userAuth: userAuth
+            }
+        })
+        .then(response => {
+            setTeams(response.data.data.getTeams.response); 
+        })
+        .catch(error => {
+            console.error('Error fetching teams:', error);
+        });
     }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Estructura los datos para enviar al API Gateway
         const dataToSend = {
             data: {
                 name,
@@ -48,7 +80,7 @@ const CreateUserModal = ({ closeModal, addUser }) => {
                 superior: superior || undefined, // Campo opcional
                 team: team || undefined, // Campo opcional
             },
-            userEmail: "admin@admin.com" // Aquí deberías poner el email del usuario que está realizando la acción
+            userEmail: "admin@admin.com"
         };
 
         try {

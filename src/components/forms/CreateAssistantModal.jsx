@@ -3,6 +3,7 @@ import { MdClose } from "react-icons/md";
 import Swal from 'sweetalert2';
 import axios from 'axios';
 import Select from 'react-select';
+import Cookies from 'js-cookie'; 
 
 const CreateAssistantModal = ({ closeModal, refreshAssistants }) => {
     const [assistant, setAssistant] = useState("");
@@ -10,27 +11,55 @@ const CreateAssistantModal = ({ closeModal, refreshAssistants }) => {
     const [assistants, setAssistants] = useState([]);
     const [users, setUsers] = useState([]);
 
+    const email = Cookies.get('email');
+    const token = Cookies.get('token');
+
     useEffect(() => {
-        axios.get(`${import.meta.env.VITE_PM_URL}/get-users`)
-            .then(response => {
-                const allUsers = response.data;
-                setAssistants(allUsers.filter(user => user.role === 'asistente'));
-                setUsers(allUsers.filter(user => user.role !== 'asistente'));
-            })
-            .catch(error => {
-                console.error('Error fetching users:', error);
-            });
+        axios.post(`${import.meta.env.VITE_AG_URL}`, {
+            query: `
+                mutation GetAllUsersPersonalManager($userAuth: UserAuth!) {
+                    getAllUsersPersonalManager(userAuth: $userAuth)
+                }
+            `,
+            variables: {
+                userAuth: {
+                    email: email,
+                    token: token
+                }
+            }
+        })
+        .then(response => {
+            const allUsers = response.data.data.getAllUsersPersonalManager.response;
+            setAssistants(allUsers.filter(user => user.role === 'asistente'));
+            setUsers(allUsers.filter(user => user.role !== 'asistente'));
+        })
+        .catch(error => {
+            console.error('Error fetching users:', error);
+        });
     }, []);
 
     const handleSubmit = (e) => {
         e.preventDefault();
-
+    
         const payload = {
-            assistant_email: assistant,
-            user_email: user
+            query: `
+                mutation AddAssistant($data: JSON!, $userAuth: UserAuth!) {
+                    addAssistant(data: $data, userAuth: $userAuth)
+                }
+            `,
+            variables: {
+                userAuth: {
+                    email: email,
+                    token: token
+                },
+                data: {
+                    assistant_email: assistant,
+                    user_email: user
+                }
+            }
         };
-
-        axios.post(`${import.meta.env.VITE_PM_URL}/add-assistant`, payload)
+    
+        axios.post(`${import.meta.env.VITE_AG_URL}`, payload)
             .then(response => {
                 Swal.fire({
                     title: 'Asistente asignado',

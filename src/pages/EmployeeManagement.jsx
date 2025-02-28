@@ -338,9 +338,10 @@ const EmployeeManagement = () => {
         }
 
         const result = response.data;
+        console.log(result);
         //Verificar Exito o Error
         if(result!=null && result.data.getAllAssistants.success){
-            setAssistants(Array.isArray(result.data.getAllAssistants.response) ? result.data.getAllAssistants.response : []);
+            setAssistants(Array.isArray(result.data.getAllAssistants.response.assistants) ? result.data.getAllAssistants.response.assistants : []);
         }else{
             console.error("Error fetching assistants:", result.data.getAllAssistants.response);
         }
@@ -999,7 +1000,7 @@ const EmployeeManagement = () => {
                             </button>
                         </div>
 
-                        <div className="mb-6">
+                        <div className="mb-6 lg:text-left text-center">
                             <button
                                 className="bg-blue-600 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-700"
                                 onClick={openCreateTeamModal}
@@ -1155,7 +1156,7 @@ const EmployeeManagement = () => {
                             </button>
                         </div>
                     
-                        <div className="mb-6">
+                        <div className="mb-6 lg:text-left text-center">
                             <button
                                 className="bg-blue-600 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-700"
                                 onClick={openAssistantModal}
@@ -1239,7 +1240,7 @@ const EmployeeManagement = () => {
                             </button>
                         </div>
 
-                        <div className="mb-6">
+                        <div className="mb-6 lg:text-left text-center">
                             <button
                                 className="bg-blue-600 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-700"
                                 onClick={openContractModal}

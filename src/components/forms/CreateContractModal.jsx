@@ -5,6 +5,7 @@ import axios from "axios";
 import Select from "react-select";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import Cookies from 'js-cookie'; 
 
 const CreateContractModal = ({ closeModal, addContract }) => {
     const [userEmail, setUserEmail] = useState("");
@@ -19,49 +20,125 @@ const CreateContractModal = ({ closeModal, addContract }) => {
     const [roles, setRoles] = useState([]);
 
     useEffect(() => {
-        axios.get(`${import.meta.env.VITE_PM_URL}/get-users`)
-            .then(response => {
-                const inactiveUsers = response.data.filter(user => user.role === "desactivado");
-                setUsers(inactiveUsers);
-            })
-            .catch(error => {
-                console.error("Error fetching users:", error);
-            });
+        // Obtén el email y el token de las cookies
+        const email = Cookies.get('email');
+        const token = Cookies.get('token');
 
-        axios.get(`${import.meta.env.VITE_PM_URL}/get-types`)
-            .then(response => {
-                setTypes(response.data);
-            })
-            .catch(error => {
-                console.error("Error fetching contract types:", error);
-            });
+        if (!email || !token) {
+            console.error('Email or token is missing in cookies');
+            return;
+        }
 
-        axios.get(`${import.meta.env.VITE_PM_URL}/get-roles`)
-            .then(response => {
-                setRoles(response.data);
-            })
-            .catch(error => {
-                console.error("Error fetching roles:", error);
-            });
+        const userAuth = {
+            email: email,
+            token: token
+        };
+
+        // Mutación para obtener usuarios
+        axios.post(`${import.meta.env.VITE_AG_URL}`, {
+            query: `
+                mutation GetAllUsersPersonalManager($userAuth: UserAuth!) {
+                    getAllUsersPersonalManager(userAuth: $userAuth)
+                }
+            `,
+            variables: {
+                userAuth: userAuth
+            }
+        })
+        .then(response => {
+            const allUsers = response.data.data.getAllUsersPersonalManager.response;
+            const inactiveUsers = allUsers.filter(user => user.role === "desactivado");
+            setUsers(inactiveUsers);
+        })
+        .catch(error => {
+            console.error("Error fetching users:", error);
+        });
+
+        // Mutación para obtener tipos de contrato
+        axios.post(`${import.meta.env.VITE_AG_URL}`, {
+            query: `
+                mutation GetContractTypes($userAuth: UserAuth!) {
+                    getContractTypes(userAuth: $userAuth)
+                }
+            `,
+            variables: {
+                userAuth: userAuth
+            }
+        })
+        .then(response => {
+            setTypes(response.data.data.getContractTypes.response);
+        })
+        .catch(error => {
+            console.error("Error fetching contract types:", error);
+        });
+
+        axios.post(`${import.meta.env.VITE_AG_URL}`, {
+            query: `
+                mutation GetRoles($userAuth: UserAuth!) {
+                    getRoles(userAuth: $userAuth)
+                }
+            `,
+            variables: {
+                userAuth: userAuth
+            }
+        })
+        .then(response => {
+            setRoles(response.data.data.getRoles.response);
+        })
+        .catch(error => {
+            console.error("Error fetching roles:", error);
+        });
     }, []);
 
     const handleSubmit = (e) => {
         e.preventDefault();
-
+    
+        // Obtén el email y el token de las cookies
+        const email = Cookies.get('email');
+        const token = Cookies.get('token');
+    
+        if (!email || !token) {
+            console.error('Email or token is missing in cookies');
+            return;
+        }
+    
+        // Construye el objeto contract
         const contract = {
             user_email: userEmail,
             type,
             salary,
             start_date: startDate.toISOString().split("T")[0],
-            probation_end_date: probationEndDate ? probationEndDate.toISOString().split("T")[0] : null,
             role
         };
-
+    
+        // Añade probation_end_date si está definido
+        if (probationEndDate) {
+            contract.probation_end_date = probationEndDate.toISOString().split("T")[0];
+        }
+    
+        // Añade end_date solo si el tipo no es "indefinido" y endDate está definido
         if (type !== "indefinido" && endDate) {
             contract.end_date = endDate.toISOString().split("T")[0];
         }
-
-        axios.post(`${import.meta.env.VITE_PM_URL}/create-contract`, contract)
+    
+        // Prepara el payload para la mutación GraphQL
+        const payload = {
+            query: `
+                mutation CreateContract($contract: JSON!, $userAuth: UserAuth!) {
+                    createContract(contract: $contract, userAuth: $userAuth)
+                }
+            `,
+            variables: {
+                contract: contract,
+                userAuth: {
+                    email: email,
+                    token: token
+                }
+            }
+        };
+    
+        // Realiza la solicitud POST al API Gateway
+        axios.post(`${import.meta.env.VITE_AG_URL}`, payload)
             .then(response => {
                 Swal.fire({
                     title: "Contrato creado",
@@ -69,7 +146,7 @@ const CreateContractModal = ({ closeModal, addContract }) => {
                     icon: "success",
                     confirmButtonText: "OK"
                 });
-                addContract(response.data);
+                addContract(response.data.data.createContract); // Asegúrate de acceder a los datos correctos
                 closeModal();
             })
             .catch(error => {
