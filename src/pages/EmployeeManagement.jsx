@@ -386,21 +386,78 @@ const EmployeeManagement = () => {
         }
     };
 
+    // const handleSave = async (email) => { // Gabriel
+    //     try {
+    //         const dataToSend = { ...tempEmployeeData };
+    //         if (dataToSend.team === "") {
+    //             delete dataToSend.team;
+    //         }
+    //         await axios.patch(`${import.meta.env.VITE_PM_URL}/update-user/${email}`, dataToSend);
+    //         setEmployees((prev) =>
+    //             prev.map((employee) =>
+    //                 employee.email === email ? { ...employee, ...tempEmployeeData } : employee
+    //             )
+    //         );
+    //         setEditingRow(null);
+    //         setTempEmployeeData({});
+    //         Swal.fire("Actualizado!", "El usuario ha sido actualizado.", "success");
+    //     } catch (error) {
+    //         console.error("Error updating user:", error);
+    //         Swal.fire("Error!", "Hubo un error al actualizar el usuario.", "error");
+    //     }
+    // };
     const handleSave = async (email) => { // Gabriel
         try {
             const dataToSend = { ...tempEmployeeData };
             if (dataToSend.team === "") {
                 delete dataToSend.team;
             }
-            await axios.patch(`${import.meta.env.VITE_PM_URL}/update-user/${email}`, dataToSend);
-            setEmployees((prev) =>
-                prev.map((employee) =>
-                    employee.email === email ? { ...employee, ...tempEmployeeData } : employee
-                )
+    
+            const token = Cookies.get('token'); 
+            const userEmail = Cookies.get('email'); 
+    
+            const response = await axios.post(
+                `${import.meta.env.VITE_AG_URL}`, 
+                {
+                    query: `
+                        mutation UpdateUserPersonalManager($email: String!, $input: JSON!, $userAuth: UserAuth!) {
+                            updateUserPersonalManager(email: $email, input: $input, userAuth: $userAuth) {
+                                message
+                                success
+                                response
+                            }
+                        }
+                    `,
+                    variables: {
+                        email: email,
+                        input: dataToSend,
+                        userAuth: {
+                            email: userEmail,
+                            token: token
+                        }
+                    }
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
             );
-            setEditingRow(null);
-            setTempEmployeeData({});
-            Swal.fire("Actualizado!", "El usuario ha sido actualizado.", "success");
+    
+            const result = response.data.data.updateUserPersonalManager;
+    
+            if (result.success) {
+                setEmployees((prev) =>
+                    prev.map((employee) =>
+                        employee.email === email ? { ...employee, ...tempEmployeeData } : employee
+                    )
+                );
+                setEditingRow(null);
+                setTempEmployeeData({});
+                Swal.fire("Actualizado!", "El usuario ha sido actualizado.", "success");
+            } else {
+                throw new Error(result.message);
+            }
         } catch (error) {
             console.error("Error updating user:", error);
             Swal.fire("Error!", "Hubo un error al actualizar el usuario.", "error");
@@ -432,6 +489,31 @@ const EmployeeManagement = () => {
         setTempContractData({ ...contract });
     };
 
+    // const handleSaveContract = async (contractEmail) => { // Gabriel
+    //     try {
+    //         const dataToSend = Object.keys(tempContractData).reduce((acc, key) => {
+    //             if (tempContractData[key] !== contracts.find((c) => c.user_email === contractEmail)[key]) {
+    //                 acc[key] = tempContractData[key];
+    //             }
+    //             return acc;
+    //         }, {});
+
+    //         if (Object.keys(dataToSend).length > 0) {
+    //             await axios.patch(`${import.meta.env.VITE_PM_URL}/update-contract/${contractEmail}`, dataToSend);
+    //             setContracts((prev) =>
+    //                 prev.map((contract) =>
+    //                     contract.user_email === contractEmail ? { ...contract, ...dataToSend } : contract
+    //                 )
+    //             );
+    //             Swal.fire("Actualizado!", "El contrato ha sido actualizado.", "success");
+    //         }
+    //         setEditingContract(null);
+    //         setTempContractData({});
+    //     } catch (error) {
+    //         console.error("Error updating contract:", error);
+    //         Swal.fire("Error!", "Hubo un error al actualizar el contrato.", "error");
+    //     }
+    // };
     const handleSaveContract = async (contractEmail) => { // Gabriel
         try {
             const dataToSend = Object.keys(tempContractData).reduce((acc, key) => {
@@ -440,15 +522,51 @@ const EmployeeManagement = () => {
                 }
                 return acc;
             }, {});
-
+    
             if (Object.keys(dataToSend).length > 0) {
-                await axios.patch(`${import.meta.env.VITE_PM_URL}/update-contract/${contractEmail}`, dataToSend);
-                setContracts((prev) =>
-                    prev.map((contract) =>
-                        contract.user_email === contractEmail ? { ...contract, ...dataToSend } : contract
-                    )
+                const token = Cookies.get('token'); 
+                const userEmail = Cookies.get('email'); 
+    
+                const response = await axios.post(
+                    `${import.meta.env.VITE_AG_URL}`, 
+                    {
+                        query: `
+                            mutation UpdateContract($email: String!, $input: JSON!, $userAuth: UserAuth!) {
+                                updateContract(email: $email, input: $input, userAuth: $userAuth) {
+                                    message
+                                    success
+                                    response
+                                }
+                            }
+                        `,
+                        variables: {
+                            email: contractEmail,
+                            input: dataToSend,
+                            userAuth: {
+                                email: userEmail,
+                                token: token
+                            }
+                        }
+                    },
+                    {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    }
                 );
-                Swal.fire("Actualizado!", "El contrato ha sido actualizado.", "success");
+    
+                const result = response.data.data.updateContract;
+    
+                if (result.success) {
+                    setContracts((prev) =>
+                        prev.map((contract) =>
+                            contract.user_email === contractEmail ? { ...contract, ...dataToSend } : contract
+                        )
+                    );
+                    Swal.fire("Actualizado!", "El contrato ha sido actualizado.", "success");
+                } else {
+                    throw new Error(result.message);
+                }
             }
             setEditingContract(null);
             setTempContractData({});
@@ -458,6 +576,32 @@ const EmployeeManagement = () => {
         }
     };
 
+    // const handleSaveTeam = async (teamName) => { // Gabriel
+    //     try {
+    //         const dataToSend = { ...tempTeamData };
+    //         if (dataToSend.name === "") {
+    //             delete dataToSend.name;
+    //         }
+    //         if (dataToSend.leader === "") {
+    //             delete dataToSend.leader;
+    //         }
+    //         if (dataToSend.scope === "") {
+    //             delete dataToSend.scope;
+    //         }
+    //         await axios.patch(`${import.meta.env.VITE_PM_URL}/update-team/${teamName}`, dataToSend);
+    //         setTeams((prev) =>
+    //             prev.map((team) =>
+    //                 team.name === teamName ? { ...team, ...tempTeamData } : team
+    //             )
+    //         );
+    //         setEditingTeam(null);
+    //         setTempTeamData({});
+    //         Swal.fire("Actualizado!", "El equipo ha sido actualizado.", "success");
+    //     } catch (error) {
+    //         console.error("Error updating team:", error);
+    //         Swal.fire("Error!", "Hubo un error al actualizar el equipo.", "error");
+    //     }
+    // };
     const handleSaveTeam = async (teamName) => { // Gabriel
         try {
             const dataToSend = { ...tempTeamData };
@@ -470,15 +614,52 @@ const EmployeeManagement = () => {
             if (dataToSend.scope === "") {
                 delete dataToSend.scope;
             }
-            await axios.patch(`${import.meta.env.VITE_PM_URL}/update-team/${teamName}`, dataToSend);
-            setTeams((prev) =>
-                prev.map((team) =>
-                    team.name === teamName ? { ...team, ...tempTeamData } : team
-                )
+    
+            const token = Cookies.get('token'); 
+            const userEmail = Cookies.get('email'); 
+    
+            const response = await axios.post(
+                `${import.meta.env.VITE_AG_URL}`, 
+                {
+                    query: `
+                        mutation UpdateTeam($name: String!, $input: JSON!, $userAuth: UserAuth!) {
+                            updateTeam(name: $name, input: $input, userAuth: $userAuth) {
+                                message
+                                success
+                                response
+                            }
+                        }
+                    `,
+                    variables: {
+                        name: teamName,
+                        input: dataToSend,
+                        userAuth: {
+                            email: userEmail,
+                            token: token
+                        }
+                    }
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
             );
-            setEditingTeam(null);
-            setTempTeamData({});
-            Swal.fire("Actualizado!", "El equipo ha sido actualizado.", "success");
+    
+            const result = response.data.data.updateTeam;
+    
+            if (result.success) {
+                setTeams((prev) =>
+                    prev.map((team) =>
+                        team.name === teamName ? { ...team, ...tempTeamData } : team
+                    )
+                );
+                setEditingTeam(null);
+                setTempTeamData({});
+                Swal.fire("Actualizado!", "El equipo ha sido actualizado.", "success");
+            } else {
+                throw new Error(result.message);
+            }
         } catch (error) {
             console.error("Error updating team:", error);
             Swal.fire("Error!", "Hubo un error al actualizar el equipo.", "error");
@@ -521,6 +702,30 @@ const EmployeeManagement = () => {
         fetchContracts();
     };
 
+    // const handleDeleteUser = async (userEmail) => { // Gabriel
+    //     const result = await Swal.fire({
+    //         title: '¿Estás seguro?',
+    //         text: "No podrás revertir esto",
+    //         icon: 'warning',
+    //         showCancelButton: true,
+    //         confirmButtonColor: '#3085d6',
+    //         cancelButtonColor: '#d33',
+    //         confirmButtonText: 'Sí, eliminar',
+    //         cancelButtonText: 'Cancelar'
+    //     });
+    
+    
+    //     if (result.isConfirmed) {
+    //         try {
+    //             await axios.delete(`${import.meta.env.VITE_PM_URL}/delete-user/${userEmail}`);
+    //             setEmployees((prev) => prev.filter((employee) => employee.email !== userEmail));
+    //             Swal.fire("Eliminado!", "El usuario ha sido eliminado.", "success");
+    //         } catch (error) {
+    //             console.error("Error deleting user:", error);
+    //             Swal.fire("Error!", "Hubo un error al eliminar el usuario.", "error");
+    //         }
+    //     }
+    // };
     const handleDeleteUser = async (userEmail) => { // Gabriel
         const result = await Swal.fire({
             title: '¿Estás seguro?',
@@ -535,16 +740,80 @@ const EmployeeManagement = () => {
     
         if (result.isConfirmed) {
             try {
-                await axios.delete(`${import.meta.env.VITE_PM_URL}/delete-user/${userEmail}`);
-                setEmployees((prev) => prev.filter((employee) => employee.email !== userEmail));
-                Swal.fire("Eliminado!", "El usuario ha sido eliminado.", "success");
+                const token = Cookies.get('token'); 
+                const email = Cookies.get('email'); 
+    
+                const response = await axios.post(
+                    `${import.meta.env.VITE_AG_URL}`, 
+                    {
+                        query: `
+                            mutation DeleteUserPersonalManager($email: String!, $userAuth: UserAuth!) {
+                                deleteUserPersonalManager(email: $email, userAuth: $userAuth) {
+                                    message
+                                    success
+                                    response
+                                }
+                            }
+                        `,
+                        variables: {
+                            email: userEmail,
+                            userAuth: {
+                                email: email,
+                                token: token
+                            }
+                        }
+                    },
+                    {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+    
+                const result = response.data.data.deleteUserPersonalManager;
+    
+                if (result.success) {
+                    setEmployees((prev) => prev.filter((employee) => employee.email !== userEmail));
+                    Swal.fire("Eliminado!", "El usuario ha sido eliminado.", "success");
+                } else {
+                    throw new Error(result.message);
+                }
             } catch (error) {
                 console.error("Error deleting user:", error);
                 Swal.fire("Error!", "Hubo un error al eliminar el usuario.", "error");
             }
         }
     };
+    
 
+    // const handleDeleteAssistant = async (assistantEmail, userEmail) => { // Gabriel
+    //     const result = await Swal.fire({
+    //         title: '¿Estás seguro?',
+    //         text: "No podrás revertir esto",
+    //         icon: 'warning',
+    //         showCancelButton: true,
+    //         confirmButtonColor: '#3085d6',
+    //         cancelButtonColor: '#d33',
+    //         confirmButtonText: 'Sí, eliminar',
+    //         cancelButtonText: 'Cancelar'
+    //     });
+    
+    //     if (result.isConfirmed) {
+    //         try {
+    //             await axios.delete(`${import.meta.env.VITE_PM_URL}/remove-assistant`, {
+    //                 data: {
+    //                     assistant_email: assistantEmail,
+    //                     user_email: userEmail
+    //                 }
+    //             });
+    //             setAssistants((prev) => prev.filter((assistant) => assistant.email !== assistantEmail));
+    //             Swal.fire("Eliminado!", "El asistente ha sido eliminado.", "success");
+    //         } catch (error) {
+    //             console.error("Error deleting assistant:", error);
+    //             Swal.fire("Error!", "Hubo un error al eliminar el asistente.", "error");
+    //         }
+    //     }
+    // };
     const handleDeleteAssistant = async (assistantEmail, userEmail) => { // Gabriel
         const result = await Swal.fire({
             title: '¿Estás seguro?',
@@ -559,14 +828,45 @@ const EmployeeManagement = () => {
     
         if (result.isConfirmed) {
             try {
-                await axios.delete(`${import.meta.env.VITE_PM_URL}/remove-assistant`, {
-                    data: {
-                        assistant_email: assistantEmail,
-                        user_email: userEmail
+                const token = Cookies.get('token'); 
+                const email = Cookies.get('email'); 
+    
+                const response = await axios.post(
+                    `${import.meta.env.VITE_AG_URL}`, 
+                    {
+                        query: `
+                            mutation DeleteAssistant($assistantEmail: String!, $userEmail: String!, $userAuth: UserAuth!) {
+                                deleteAssistant(assistantEmail: $assistantEmail, userEmail: $userEmail, userAuth: $userAuth) {
+                                    message
+                                    success
+                                    response
+                                }
+                            }
+                        `,
+                        variables: {
+                            assistantEmail: assistantEmail,
+                            userEmail: userEmail,
+                            userAuth: {
+                                email: email,
+                                token: token
+                            }
+                        }
+                    },
+                    {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
                     }
-                });
-                setAssistants((prev) => prev.filter((assistant) => assistant.email !== assistantEmail));
-                Swal.fire("Eliminado!", "El asistente ha sido eliminado.", "success");
+                );
+    
+                const result = response.data.data.deleteAssistant;
+    
+                if (result.success) {
+                    setAssistants((prev) => prev.filter((assistant) => assistant.email !== assistantEmail));
+                    Swal.fire("Eliminado!", "El asistente ha sido eliminado.", "success");
+                } else {
+                    throw new Error(result.message);
+                }
             } catch (error) {
                 console.error("Error deleting assistant:", error);
                 Swal.fire("Error!", "Hubo un error al eliminar el asistente.", "error");
@@ -574,6 +874,29 @@ const EmployeeManagement = () => {
         }
     };
 
+    // const handleDeleteTeam = async (teamName) => { // Gabriel
+    //     const result = await Swal.fire({
+    //         title: '¿Estás seguro?',
+    //         text: "No podrás revertir esto",
+    //         icon: 'warning',
+    //         showCancelButton: true,
+    //         confirmButtonColor: '#3085d6',
+    //         cancelButtonColor: '#d33',
+    //         confirmButtonText: 'Sí, eliminar',
+    //         cancelButtonText: 'Cancelar'
+    //     });
+    
+    //     if (result.isConfirmed) {
+    //         try {
+    //             await axios.delete(`${import.meta.env.VITE_PM_URL}/delete-team/${teamName}`);
+    //             setTeams((prev) => prev.filter((team) => team.name !== teamName));
+    //             Swal.fire("Eliminado!", "El equipo ha sido eliminado.", "success");
+    //         } catch (error) {
+    //             console.error("Error deleting team:", error);
+    //             Swal.fire("Error!", "Hubo un error al eliminar el equipo.", "error");
+    //         }
+    //     }
+    // };
     const handleDeleteTeam = async (teamName) => { // Gabriel
         const result = await Swal.fire({
             title: '¿Estás seguro?',
@@ -588,9 +911,44 @@ const EmployeeManagement = () => {
     
         if (result.isConfirmed) {
             try {
-                await axios.delete(`${import.meta.env.VITE_PM_URL}/delete-team/${teamName}`);
-                setTeams((prev) => prev.filter((team) => team.name !== teamName));
-                Swal.fire("Eliminado!", "El equipo ha sido eliminado.", "success");
+                const token = Cookies.get('token'); 
+                const email = Cookies.get('email'); 
+    
+                const response = await axios.post(
+                    `${import.meta.env.VITE_AG_URL}`, 
+                    {
+                        query: `
+                            mutation DeleteTeam($name: String!, $userAuth: UserAuth!) {
+                                deleteTeam(name: $name, userAuth: $userAuth) {
+                                    message
+                                    success
+                                    response
+                                }
+                            }
+                        `,
+                        variables: {
+                            name: teamName,
+                            userAuth: {
+                                email: email,
+                                token: token
+                            }
+                        }
+                    },
+                    {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+    
+                const result = response.data.data.deleteTeam;
+    
+                if (result.success) {
+                    setTeams((prev) => prev.filter((team) => team.name !== teamName));
+                    Swal.fire("Eliminado!", "El equipo ha sido eliminado.", "success");
+                } else {
+                    throw new Error(result.message);
+                }
             } catch (error) {
                 console.error("Error deleting team:", error);
                 Swal.fire("Error!", "Hubo un error al eliminar el equipo.", "error");
@@ -598,6 +956,29 @@ const EmployeeManagement = () => {
         }
     };
 
+    // const handleDeleteContract = async (contractEmail) => { // Gabriel
+    //     const result = await Swal.fire({
+    //         title: '¿Estás seguro?',
+    //         text: "No podrás revertir esto",
+    //         icon: 'warning',
+    //         showCancelButton: true,
+    //         confirmButtonColor: '#3085d6',
+    //         cancelButtonColor: '#d33',
+    //         confirmButtonText: 'Sí, eliminar',
+    //         cancelButtonText: 'Cancelar'
+    //     });
+
+    //     if (result.isConfirmed) {
+    //         try {
+    //             await axios.delete(`${import.meta.env.VITE_PM_URL}/delete-contract/${contractEmail}`);
+    //             setContracts((prev) => prev.filter((contract) => contract.user_email !== contractEmail));
+    //             Swal.fire("Eliminado!", "El contrato ha sido eliminado.", "success");
+    //         } catch (error) {
+    //             console.error("Error deleting contract:", error);
+    //             Swal.fire("Error!", "Hubo un error al eliminar el contrato.", "error");
+    //         }
+    //     }
+    // };
     const handleDeleteContract = async (contractEmail) => { // Gabriel
         const result = await Swal.fire({
             title: '¿Estás seguro?',
@@ -609,12 +990,47 @@ const EmployeeManagement = () => {
             confirmButtonText: 'Sí, eliminar',
             cancelButtonText: 'Cancelar'
         });
-
+    
         if (result.isConfirmed) {
             try {
-                await axios.delete(`${import.meta.env.VITE_PM_URL}/delete-contract/${contractEmail}`);
-                setContracts((prev) => prev.filter((contract) => contract.user_email !== contractEmail));
-                Swal.fire("Eliminado!", "El contrato ha sido eliminado.", "success");
+                const token = Cookies.get('token'); 
+                const email = Cookies.get('email'); 
+    
+                const response = await axios.post(
+                    `${import.meta.env.VITE_AG_URL}`, 
+                    {
+                        query: `
+                            mutation DeleteContract($email: String!, $userAuth: UserAuth!) {
+                                deleteContract(email: $email, userAuth: $userAuth) {
+                                    message
+                                    success
+                                    response
+                                }
+                            }
+                        `,
+                        variables: {
+                            email: contractEmail,
+                            userAuth: {
+                                email: email,
+                                token: token
+                            }
+                        }
+                    },
+                    {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+    
+                const result = response.data.data.deleteContract;
+    
+                if (result.success) {
+                    setContracts((prev) => prev.filter((contract) => contract.user_email !== contractEmail));
+                    Swal.fire("Eliminado!", "El contrato ha sido eliminado.", "success");
+                } else {
+                    throw new Error(result.message);
+                }
             } catch (error) {
                 console.error("Error deleting contract:", error);
                 Swal.fire("Error!", "Hubo un error al eliminar el contrato.", "error");
