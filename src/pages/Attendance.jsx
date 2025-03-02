@@ -7,6 +7,7 @@ import InsertAttendanceModal from "../components/forms/InsertAttendanceModal";
 import InsertAbsenceModal from "../components/forms/InsertAbsenceModal";
 import ShowReport from "../components/forms/ShowReport";
 import UpdateAbsence from "../components/forms/UpdateAbsence";
+import Cookies from 'js-cookie';
 
 const Attendance = () => {
     const [teamFilter, setTeamFilter] = useState("Todos");
@@ -58,8 +59,37 @@ const Attendance = () => {
 
     const fetchUsers = async () => {
         try {
-            const response = await axios.get(`${import.meta.env.VITE_PM_URL}/get-users`);
-            const allUsers = Array.isArray(response.data) ? response.data : [];
+            const token = Cookies.get('token'); 
+            const email = Cookies.get('email'); 
+    
+            const response = await axios.post(
+                `${import.meta.env.VITE_AG_URL}`, 
+                {
+                    query: `
+                        mutation GetAllUsersPersonalManager($userAuth: UserAuth!) {
+                            getAllUsersPersonalManager(userAuth: $userAuth)
+                        }
+                    `,
+                    variables: {
+                        userAuth: {
+                            email: email, 
+                            token: token 
+                        }
+                    }
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+    
+            console.log("API Response:", response.data); 
+    
+            const allUsers = Array.isArray(response.data.data.getAllUsersPersonalManager.response) 
+                ? response.data.data.getAllUsersPersonalManager.response 
+                : [];
+    
             setEmployees(allUsers);
             setManagers(allUsers.filter(user => user.role === "gerente"));
         } catch (error) {
@@ -67,40 +97,160 @@ const Attendance = () => {
         }
     };
 
-    const fetchUserEmails = async () => {
-        try {
-            const response = await axios.get(`${import.meta.env.VITE_PM_URL}/get-users`);
-            const emails = response.data.map((user) => ({ label: user.email, value: user.email }));
+    const fetchUserEmails = async () => { 
+        const token = Cookies.get('token'); 
+        const email = Cookies.get('email'); 
+        let response = null;
+        try{
+            response = await axios.post(
+                `${import.meta.env.VITE_AG_URL}`, 
+                {
+                    query: `
+                        mutation GetAllUsersPersonalManager($userAuth: UserAuth!) {
+                            getAllUsersPersonalManager(userAuth: $userAuth)
+                        }
+                    `,
+                    variables: {
+                        userAuth: {
+                            email: email, 
+                            token: token 
+                        }
+                    }
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+        }catch(error){
+            console.error("No se pudo realizar la Petición al API Gateway en la obtención de los Usuarios:", error);
+        }
+        const result = response.data;
+        //Verificar Exito o Error
+        if(result!=null && result.data.getAllUsersPersonalManager.success){
+            const emails = Array.isArray(result.data.getAllUsersPersonalManager.response) ? result.data.getAllUsersPersonalManager.response.map((user) => ({ label: user.email, value: user.email })) : [];
             setUserEmails(emails);
-        } catch (error) {
-            console.error("Error fetching user emails:", error);
+        }else{
+            console.error("Error fetching user emails:", result.data.getAllUsersPersonalManager.response);
         }
     };
 
-    const fetchContractTypes = async () => {
-        try {
-            const response = await axios.get(`${import.meta.env.VITE_PM_URL}/get-types`);
-            setContractTypes(response.data);
-        } catch (error) {
-            console.error("Error fetching contract types:", error);
+    const fetchContractTypes = async () => { //Nicolas
+        const token = Cookies.get('token');
+        const email = Cookies.get('email');
+        let response = null;
+        try{
+            response = await axios.post(
+                `${import.meta.env.VITE_AG_URL}`, 
+                {
+                    query: `
+                        mutation GetContractTypes($userAuth: UserAuth!) {
+                            getContractTypes(userAuth: $userAuth)
+                        }
+                    `,
+                    variables: {
+                        userAuth: {
+                            email: email, 
+                            token: token 
+                        }
+                    }
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+        }catch(error){
+            console.error("No se pudo realizar la Petición al API Gateway en la Obtención de los Tipos de Contrato:", error);
+        }
+
+        const result = response.data;
+
+        //Verificar Exito o Error
+        if(result!=null && result.data.getContractTypes.success){
+            setContractTypes(result.data.getContractTypes.response);
+        }else{
+            console.error("Error fetching contract types:", result.data.getContractTypes.response);
         }
     };
 
-    const fetchTeams = async () => {
-        try {
-            const response = await axios.get(`${import.meta.env.VITE_PM_URL}/get-teams`);
-            setTeams(Array.isArray(response.data) ? response.data : []);
-        } catch (error) {
-            console.error("Error fetching teams:", error);
+    const fetchTeams = async () => { // Nicolas
+        const token = Cookies.get('token');
+        const email = Cookies.get('email');
+        let response = null;
+        try{
+            response = await axios.post(
+                `${import.meta.env.VITE_AG_URL}`, 
+                {
+                    query: `
+                        mutation GetTeams($userAuth: UserAuth!) {
+                            getTeams(userAuth: $userAuth)
+                        }
+                    `,
+                    variables: {
+                        userAuth: {
+                            email: email, 
+                            token: token 
+                        }
+                    }
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+        }catch(error){
+            console.error("No se pudo realizar la Petición al API Gateway en la obtención de los Equipos:", error);
+        }
+        const result = response.data;
+        //Verificar Exito o Error
+        if(result!=null && result.data.getTeams.success){
+            const teams = Array.isArray(result.data.getTeams.response) ? result.data.getTeams.response : [];
+            setTeams(Array.isArray(result.data.getTeams.response) ? result.data.getTeams.response : []);
+        }else{
+            console.error("Error fetching teams:", result.data.getTeams.response);
         }
     };
 
-    const fetchProfessions = async () => {
-        try {
-            const response = await axios.get(`${import.meta.env.VITE_PM_URL}/get-professions`);
-            setProfessions(Array.isArray(response.data) ? response.data : []);
-        } catch (error) {
-            console.error("Error fetching professions:", error);
+    const fetchProfessions = async () => { //Nicolas
+        const token = Cookies.get('token');
+        const email = Cookies.get('email');
+        let response = null;
+        try{
+            response = await axios.post(
+                `${import.meta.env.VITE_AG_URL}`, 
+                {
+                    query: `
+                        mutation GetProfessions($userAuth: UserAuth!) {
+                            getProfessions(userAuth: $userAuth)
+                        }
+                    `,
+                    variables: {
+                        userAuth: {
+                            email: email, 
+                            token: token 
+                        }
+                    }
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+        }catch(error){
+            console.error("No se pudo realizar la Petición al API Gateway en la obtención de las Profesiones:", error);
+        }
+        
+        const result = response.data;
+        //Verificar Exito o Error
+        if(result!=null && result.data.getProfessions.success){
+            setProfessions(Array.isArray(result.data.getProfessions.response) ? result.data.getProfessions.response : []);
+        }else{
+            console.error("Error fetching professions:", result.data.getProfessions.response);
         }
     };
 
@@ -214,33 +364,89 @@ const Attendance = () => {
         setSearchQuery(''); 
     };    
 
-
     const [emailFilter, setEmailFilter] = useState("");
     
     const [emailFilter2, setEmailFilter2] = useState("");
 
 const fetchAttendances = async () => {
+    const token = Cookies.get('token');
+    const email = Cookies.get('email');
+    let response = null;
     try {
-        const response = await axios.get(`${import.meta.env.VITE_AT_URL}/get-attendances`);
-        let allAttendances = Array.isArray(response.data) ? response.data : [];
+            response = await axios.post(
+                `${import.meta.env.VITE_AG_URL}`, 
+                {
+                    query: `
+                       mutation GetAttendances($userAuth: UserAuth!) {
+                      getAttendances(userAuth: $userAuth)
 
+                        }
+                    `,
+                    variables: {
+                        userAuth: {
+                            email: email, 
+                            token: token 
+                        }
+                    }
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
+            console.log("attendace",response)
+
+            let allAttendances = Array.isArray(response.data.data.getAttendances.response) 
+            ? response.data.data.getAttendances.response 
+            : [];
+        
         if (emailFilter) {
             allAttendances = allAttendances.filter(attendance => 
                 attendance.abogado_id.toLowerCase().includes(emailFilter.toLowerCase())
             );
         }
-
         setAttendances(allAttendances);
     } catch (error) {
         console.error("Error fetching attendances:", error);
     }
 };
 
-const fetchAbsences = async () => {
-    try {
-        const response = await axios.get(`${import.meta.env.VITE_AT_URL}/get-absences`);
-        let allAbsences = Array.isArray(response.data) ? response.data : [];
 
+const fetchAbsences = async () => {
+    const token = Cookies.get('token');
+    const email = Cookies.get('email');
+    let response = null;
+    try {
+        response = await axios.post(
+            `${import.meta.env.VITE_AG_URL}`, 
+            {
+                query: `
+                  mutation GetAbsences($userAuth: UserAuth!) {
+                getAbsences(userAuth: $userAuth)
+                    }
+                `,
+                variables: {
+                    userAuth: {
+                        email: email, 
+                        token: token 
+                    }
+                }
+            },
+            {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+
+        console.log("absences",response)
+
+        let allAbsences = Array.isArray(response.data.data.getAbsences.response) 
+        ? response.data.data.getAbsences.response 
+        : [];
+    
         if (emailFilter2) {
             allAbsences = allAbsences.filter(absence => 
                 absence.abogado_id.toLowerCase().includes(emailFilter2.toLowerCase())
@@ -253,31 +459,52 @@ const fetchAbsences = async () => {
     }
 };
 
-// Llamar a las funciones automáticamente cuando cambie el emailFilter
 
 useEffect(() => {
     fetchAbsences();
-}, [emailFilter2]); // Se ejecuta cada vez que cambia emailFilter
+}, [emailFilter2]); 
 
 
 useEffect(() => {
     fetchAttendances();
-}, [emailFilter]); // Se ejecuta cada vez que cambia emailFilter
+}, [emailFilter]); 
 
 
-
-const deleteAbsence = async (abogadoId) => {
+const deleteAbsence = async (absenceId) => {
+    const token = Cookies.get('token');
+    const email = Cookies.get('email');
+    let response = null;
     try {
-        // Check if we have a valid abogadoId
-        if (!abogadoId) {
-            Swal.fire("Error", "No se ha seleccionado un usuario para eliminar la ausencia", "error");
+        if (!absenceId) {
+            Swal.fire("Error", "No se ha seleccionado una ausencia para eliminar", "error");
             return;
         }
 
-        const response = await axios.delete(`${import.meta.env.VITE_AT_URL}/delete-absence`, {
-            data: { abogado_id: abogadoId }
-        });
+        response = await axios.post(
+            `${import.meta.env.VITE_AG_URL}`, 
+            {
+                query: `
+                mutation DeleteAbsence($data: JSON!, $userAuth: UserAuth!) {
+                    deleteAbsence(data: $data, userAuth: $userAuth)
+                    }
+                `,
+                variables: {
+                    data: { _id: absenceId },
+                    userAuth: {
+                        email: email, 
+                        token: token 
+                    }
+                }
+            },
+            {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
 
+
+        console.log("id", absenceId)
         Swal.fire("Eliminado", response.data.message, "success");
         fetchAbsences(); // Refrescar la lista de ausencias
     } catch (error) {
@@ -608,13 +835,13 @@ const closeEditAbsenceModal = () => {
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Salida
                                         </th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Tardanza
                                         </th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Tipo
                                         </th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Motivo
                                         </th>
                                     </tr>
@@ -671,16 +898,16 @@ const closeEditAbsenceModal = () => {
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Fecha
                                         </th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                            Tipo
                                         </th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Motivo
                                         </th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Documento de respaldo
                                         </th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                            Acciones
                                         </th>
                                     </tr>
@@ -704,11 +931,17 @@ const closeEditAbsenceModal = () => {
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                 {absence.motivo}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                {absence.documento_respaldo}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-left text-sm font-medium">
 
+
+
+                                     
 
                                             <button
-                                                    className="text-blue-600 hover:text-black-900"
+                                                    className="text-blue-600  hover:text-black-900"
                                                     onClick={() => handleEditAbsence(absence)}
                                                 >
                                                     Editar
@@ -717,10 +950,11 @@ const closeEditAbsenceModal = () => {
 
                                                 <button
                                                     className="text-red-600 hover:text-red-900"
-                                                    onClick={() => deleteAbsence(absence.abogado_id)}
+                                                    onClick={() => deleteAbsence(absence._id)}
                                                 >
                                                     Eliminar
                                                 </button>
+
 
                                             </td>
                                         </tr>
@@ -754,7 +988,7 @@ const closeEditAbsenceModal = () => {
             {isEditingAbsence && (
             <UpdateAbsence
             closeModal={closeEditAbsenceModal}
-            attendanceData={{ email: selectedAbsence.abogado_id }}
+            attendanceData={{ email: selectedAbsence._id}}
             isEditing={true}
             absenceToEdit={selectedAbsence}
             />

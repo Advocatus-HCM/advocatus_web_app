@@ -12,27 +12,25 @@ const UpdateAbsence = ({ closeModal, attendanceData, isEditing = false, absenceT
   const [tipo, setTipo] = useState("");
   const [motivo, setMotivo] = useState("");
   const [documentoRespaldo, setDocumentoRespaldo] = useState("");
-
-
-
+  const [absenceId, setAbsenceId] = useState(""); // Estado para el ID de la ausencia
 
   useEffect(() => {
     if (isEditing && absenceToEdit) {
-      // If editing, populate form with existing data
+      // Si está editando, llenar el formulario con los datos existentes
       setAbogadoId(absenceToEdit.abogado_id);
       setFecha(new Date(absenceToEdit.fecha).toISOString().split('T')[0]);
       setTipo(absenceToEdit.tipo);
       setMotivo(absenceToEdit.motivo);
       setDocumentoRespaldo(absenceToEdit.documento_respaldo || "");
+      setAbsenceId(absenceToEdit._id); // Guardar el ID de la ausencia
     } else if (attendanceData && attendanceData.email) {
-      // If creating new, just set the lawyer's email
+      // Si está creando una nueva, solo establecer el correo del abogado
       setAbogadoId(attendanceData.email);
     }
   }, [attendanceData, isEditing, absenceToEdit]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!abogadoId) {
       Swal.fire({
         title: "Error",
@@ -51,21 +49,41 @@ const UpdateAbsence = ({ closeModal, attendanceData, isEditing = false, absenceT
       documento_respaldo: documentoRespaldo,
     };
 
+    // Añadir el ID de la ausencia al cuerpo de la solicitud cuando se está editando
+    if (isEditing && absenceId) {
+      absenceData._id = absenceId;
+    }
+
     try {
-      let response;
+      let response = null;
+       const token = Cookies.get('token');
+      const email = Cookies.get('email');
       
       if (isEditing) {
-     
-        response = await axios.put(
-          `${import.meta.env.VITE_AT_URL}/update-absence/${abogadoId}`,
-          absenceData,
+
+        response = await axios.post(
+          `${import.meta.env.VITE_AG_URL}`, 
           {
-            headers: {
-              "Content-Type": "application/json",
-            },
+              query: `
+             mutation UpdateAbsence($data: JSON!, $userAuth: UserAuth!) {
+              updateAbsence(data: $data, userAuth: $userAuth)
+            }
+              `,
+              variables: {
+                  data: absenceData,
+                  userAuth: {
+                      email: email, 
+                      token: token 
+                  }
+              }
+          },
+          {
+              headers: {
+                  'Content-Type': 'application/json'
+              }
           }
-        );
-        
+      );
+
         Swal.fire({
           title: "Éxito",
           text: "Ausencia actualizada exitosamente",
@@ -73,26 +91,7 @@ const UpdateAbsence = ({ closeModal, attendanceData, isEditing = false, absenceT
           confirmButtonText: "OK",
         });
       } else {
-
-        response = await axios.post(
-          `${import.meta.env.VITE_AT_URL}/report-absences`,
-          absenceData,
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
         
-        Swal.fire({
-          title: "Éxito",
-          text: "Ausencia registrada exitosamente",
-          icon: "success",
-          confirmButtonText: "OK",
-        });
-      }
-
-      if (response.data) {
         closeModal();
       }
     } catch (error) {
@@ -107,6 +106,8 @@ const UpdateAbsence = ({ closeModal, attendanceData, isEditing = false, absenceT
       });
     }
   };
+
+
 
   return (
     <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center z-50">

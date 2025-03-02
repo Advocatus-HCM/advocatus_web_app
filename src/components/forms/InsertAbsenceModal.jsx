@@ -42,16 +42,38 @@ const InsertAbsenceModal = ({ closeModal, attendanceData }) => {
     };
 
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_AT_URL}/report-absences`,
-        absenceData,
+
+       const token = Cookies.get('token');
+          const email = Cookies.get('email');
+          let response = null;
+
+
+      response = await axios.post(
+        `${import.meta.env.VITE_AG_URL}`, 
         {
-          headers: {
-            "Content-Type": "application/json",
-      
-          },
+            query: `
+           mutation ReportAbsences($data: JSON!, $userAuth: UserAuth!) {
+             reportAbsences(data: $data, userAuth: $userAuth)
+           }
+            `,
+            variables: {
+                data: absenceData,
+                userAuth: {
+                    email: email, 
+                    token: token 
+                }
+            }
+        },
+        {
+            headers: {
+                'Content-Type': 'application/json'
+            }
         }
-      );
+    );
+
+
+
+
 
       if (response.data) {
         Swal.fire({

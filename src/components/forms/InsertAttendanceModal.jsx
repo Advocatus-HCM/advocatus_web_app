@@ -43,6 +43,9 @@ const InsertAttendanceModal = ({ closeModal,attendanceData }) => {
       const fechaISO = new Date(fecha);
       const entradaISO = new Date(`${fecha}T${entrada}:00.000Z`);
       const salidaISO = new Date(`${fecha}T${salida}:00.000Z`);
+        let response = null;
+             const token = Cookies.get('token');
+            const email = Cookies.get('email');
   
       if (isNaN(entradaISO.getTime()) || isNaN(salidaISO.getTime())) {
         throw new Error("Formato de hora inválido");
@@ -58,13 +61,32 @@ const InsertAttendanceModal = ({ closeModal,attendanceData }) => {
         motivo,
       };
   
-      const response = await axios.post(`${import.meta.env.VITE_AT_URL}/insertattendance`, attendanceData, {
-        headers: {
-          Authorization: `Bearer ${myToken}`,
-          "Content-Type": "application/json",
+
+      response = await axios.post(
+        `${import.meta.env.VITE_AG_URL}`, 
+        {
+            query: `
+           mutation InsertAttendance($data: JSON!, $userAuth: UserAuth!) {
+           insertAttendance(data: $data, userAuth: $userAuth)
+          }
+            `,
+            variables: {
+                data: attendanceData,
+                userAuth: {
+                    email: email, 
+                    token: token 
+                }
+            }
         },
-      });
-  
+        {
+            headers: {
+                Authorization: `Bearer ${myToken}`,
+                'Content-Type': 'application/json'
+            }
+        }
+    );
+
+
       Swal.fire({
         title: "Éxito",
         text: "Asistencia registrada exitosamente",
