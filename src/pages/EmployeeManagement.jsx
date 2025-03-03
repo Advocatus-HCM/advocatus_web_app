@@ -421,11 +421,7 @@ const EmployeeManagement = () => {
                 {
                     query: `
                         mutation UpdateUserPersonalManager($email: String!, $input: JSON!, $userAuth: UserAuth!) {
-                            updateUserPersonalManager(email: $email, input: $input, userAuth: $userAuth) {
-                                message
-                                success
-                                response
-                            }
+                            updateUserPersonalManager(email: $email, input: $input, userAuth: $userAuth)
                         }
                     `,
                     variables: {
@@ -531,17 +527,13 @@ const EmployeeManagement = () => {
                     `${import.meta.env.VITE_AG_URL}`, 
                     {
                         query: `
-                            mutation UpdateContract($email: String!, $input: JSON!, $userAuth: UserAuth!) {
-                                updateContract(email: $email, input: $input, userAuth: $userAuth) {
-                                    message
-                                    success
-                                    response
-                                }
+                            mutation UpdateContract($data: JSON!, $contractid: String!, $userAuth: UserAuth!) {
+                                updateContract(data: $data, contractid: $contractid, userAuth: $userAuth)
                             }
                         `,
                         variables: {
-                            email: contractEmail,
-                            input: dataToSend,
+                            contractid: contractEmail,
+                            data: dataToSend,
                             userAuth: {
                                 email: userEmail,
                                 token: token
@@ -622,17 +614,13 @@ const EmployeeManagement = () => {
                 `${import.meta.env.VITE_AG_URL}`, 
                 {
                     query: `
-                        mutation UpdateTeam($name: String!, $input: JSON!, $userAuth: UserAuth!) {
-                            updateTeam(name: $name, input: $input, userAuth: $userAuth) {
-                                message
-                                success
-                                response
-                            }
+                        mutation UpdateTeam($team: String!, $data: JSON!, $userAuth: UserAuth!) {
+                            updateTeam(team: $team, data: $data, userAuth: $userAuth)
                         }
                     `,
                     variables: {
-                        name: teamName,
-                        input: dataToSend,
+                        team: teamName,
+                        data: dataToSend,
                         userAuth: {
                             email: userEmail,
                             token: token
@@ -748,11 +736,7 @@ const EmployeeManagement = () => {
                     {
                         query: `
                             mutation DeleteUserPersonalManager($email: String!, $userAuth: UserAuth!) {
-                                deleteUserPersonalManager(email: $email, userAuth: $userAuth) {
-                                    message
-                                    success
-                                    response
-                                }
+                                deleteUserPersonalManager(email: $email, userAuth: $userAuth)
                             }
                         `,
                         variables: {
@@ -835,17 +819,15 @@ const EmployeeManagement = () => {
                     `${import.meta.env.VITE_AG_URL}`, 
                     {
                         query: `
-                            mutation DeleteAssistant($assistantEmail: String!, $userEmail: String!, $userAuth: UserAuth!) {
-                                deleteAssistant(assistantEmail: $assistantEmail, userEmail: $userEmail, userAuth: $userAuth) {
-                                    message
-                                    success
-                                    response
-                                }
+                            mutation RemoveAssistant($data: JSON!, $userAuth: UserAuth!) {
+                                removeAssistant(data: $data, userAuth: $userAuth)
                             }
                         `,
                         variables: {
-                            assistantEmail: assistantEmail,
-                            userEmail: userEmail,
+                            data: {
+                                assistantEmail: assistantEmail,
+                                userEmail: userEmail,
+                            },
                             userAuth: {
                                 email: email,
                                 token: token
@@ -918,16 +900,12 @@ const EmployeeManagement = () => {
                     `${import.meta.env.VITE_AG_URL}`, 
                     {
                         query: `
-                            mutation DeleteTeam($name: String!, $userAuth: UserAuth!) {
-                                deleteTeam(name: $name, userAuth: $userAuth) {
-                                    message
-                                    success
-                                    response
-                                }
+                            mutation DeleteTeam($team: String!, $userAuth: UserAuth!) {
+                                deleteTeam(team: $team, userAuth: $userAuth)
                             }
                         `,
                         variables: {
-                            name: teamName,
+                            team: teamName,
                             userAuth: {
                                 email: email,
                                 token: token
@@ -1000,16 +978,12 @@ const EmployeeManagement = () => {
                     `${import.meta.env.VITE_AG_URL}`, 
                     {
                         query: `
-                            mutation DeleteContract($email: String!, $userAuth: UserAuth!) {
-                                deleteContract(email: $email, userAuth: $userAuth) {
-                                    message
-                                    success
-                                    response
-                                }
+                            mutation DeleteContract($contractid: String!, $userAuth: UserAuth!) {
+                                deleteContract(contractid: $contractid, userAuth: $userAuth)
                             }
                         `,
                         variables: {
-                            email: contractEmail,
+                            contractid: contractEmail,
                             userAuth: {
                                 email: email,
                                 token: token
