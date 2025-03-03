@@ -23,19 +23,49 @@ const ShowReport = ({ closeModal, attendanceData }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    try {
-      const response = await axios.get(`${import.meta.env.VITE_AT_URL}/get-reports`, {
-        params: {
-          abogado_id: abogadoId,
-          fecha_inicio: fecha,
-          fecha_fin: fecha2,
-        },
-        headers: {
-          Authorization: `Bearer ${myToken}`,
-        },
-      });
 
-      const { total_asistencias, total_inasistencias } = response.data;
+
+
+
+      
+
+
+    try {
+
+        const token = Cookies.get('token');
+        const email = Cookies.get('email');
+
+     
+      const response = await axios.post(
+        `${import.meta.env.VITE_AG_URL}`,
+        {
+            query: 
+              `mutation GetReport($data: JSON!, $userAuth: UserAuth!) {
+            getReport(data: $data, userAuth: $userAuth)
+        
+                }
+            `,
+            variables: {
+                data: {
+                    abogado_id: abogadoId,
+                    fecha_inicio: fecha,
+                    fecha_fin: fecha2,
+                },
+                userAuth: {
+                    email: email,
+                    token: token,
+                }
+            }
+        },
+        {
+            headers: {
+                Authorization: `Bearer ${myToken}`,
+                'Content-Type': 'application/json'
+            }
+        }
+    );
+
+      const { total_asistencias, total_inasistencias } = response.data.data.getReport.response;
 
       setTotalInasistencias(total_inasistencias);
       setTotalTardanzas(total_asistencias);
